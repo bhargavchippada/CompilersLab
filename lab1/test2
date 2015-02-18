@@ -1,0 +1,21 @@
+int max(int a, int b){
+	if (a >= b) return a;
+	else return b;
+}
+
+
+void main(){
+	int i = 5;
+	++i++;
+	int j = i+0x128e; //hello\ndlkfnd
+	/*
+	this is a comment/****
+	/******q/******q/***********
+	*/
+	y = "jfhrwh\"uh";
+	while(i != j){
+
+	}
+	for (int j= 10; j > 0; j--);
+	return;
+}

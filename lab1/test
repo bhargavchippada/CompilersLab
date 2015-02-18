@@ -1,0 +1,8 @@
+void main(){
+	int i = 5;
+	int j = i+0x128e; //hello
+	return;
+	/*
+	this is a comment
+	*/
+}
