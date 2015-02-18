@@ -1,2 +1,2 @@
 # CompilersLab
-CS 302 compilers lab
+CS 306 compilers lab
