@@ -8,8 +8,8 @@
 
 %polymorphic STRING : std::string;  EXPAST : ExpAst*; STMTAST : StmtAst*; STMTLIST : list<StmtAst*>*; EXPLIST : list<ExpAst*>*; INTCONST : INTCONST*; FLOATCONST : FLOATCONST*; STRINGCONST : STRINGCONST*; IDENTIFIERAST : IDENTIFIERAST*; ArrayRef : ArrayRef*; op2 : op2*; op1 : op1*; FUNCALL : FUNCALL*; BlockStmt : BlockStmt*; ReturnStmt : ReturnStmt*; AssStmt : AssStmt*; IfStmt : IfStmt*; emptyStmt : emptyStmt*; WhileStmt : WhileStmt*; ForStmt : ForStmt*; INT : int; FLOAT : float;
 
-%type<STRING> unary_operator IDENTIFIER STRING_LITERAL
-%type<INT> INT_CONSTANT
+%type<STRING> unary_operator IDENTIFIER STRING_LITERAL type_specifier declarator//fun_declarator
+%type<INT> INT_CONSTANT constant_expression
 %type<FLOAT> FLOAT_CONSTANT
 
 %type<EXPAST> expression logical_and_expression equality_expression relational_expression additive_expression multiplicative_expression unary_expression postfix_expression primary_expression l_expression
@@ -25,22 +25,62 @@
 
 translation_unit
 	: function_definition 
-	| translation_unit function_definition 
-        ;
+  {
+    // gobltable->printTable();
+  }
+	| translation_unit function_definition
+  {
+    // gobltable->printTable();
+  }
+  ;
 
 function_definition
 	: type_specifier fun_declarator compound_statement 
+  {
+    localtable->returntype = $1;
+    localtable->printTable();
+    symbTable *localtableTemp = new symbTable("temp", gobltable);
+    *localtableTemp = *localtable;
+    localtable = new symbTable("temp", gobltable);
+    isParam = true;
+    int exitcode = gobltable->addEntity(localtableTemp->tablename ,"fun", $1,false,   localtableTemp);
+    if (exitcode < 0) {
+      ABORT();
+    }
+  }
 	;
 
 type_specifier
-	: VOID 	
-        | INT   
-	| FLOAT 
-        ;
+	: VOID
+  {
+    $$ = "void";
+    varType = "void";
+  } 	
+  | INT
+  {
+    $$ = "int";
+    varType = "int";
+  }
+	| FLOAT
+  {
+    $$ = "float";
+    varType = "float";
+  }
+  ;
 
 fun_declarator
 	: IDENTIFIER '(' parameter_list ')' 
-        | IDENTIFIER '(' ')' 
+  {
+    localtable->tablename = $1;
+    isParam = false;
+    // $$ = $1;
+  }
+  | IDENTIFIER '(' ')' 
+  {
+    localtable->tablename = $1;
+    isParam = false;
+    // $$ = $1;
+  }
 	;
 
 parameter_list
@@ -50,33 +90,46 @@ parameter_list
 
 parameter_declaration
 	: type_specifier declarator 
-        ;
+  ;
 
 declarator
 	: IDENTIFIER 
+  {
+    $$ = $1;
+    int exitcode = localtable->addEntity($1, "var", varType, isParam, NULL);
+    if (exitcode < 0) {
+      ABORT();
+    }
+  }
 	| declarator '[' constant_expression ']' 
-        ;
+  {
+    localtable->addArray($1, $3, isParam);
+  }
+  ;
 
 constant_expression 
-        : INT_CONSTANT
-        | FLOAT_CONSTANT 
-        ;
+    : INT_CONSTANT
+    {
+      $$ = $1;
+    }
+    | FLOAT_CONSTANT
+    ;
 
 compound_statement
 	: '{' '}'
   {
     $$ = new BlockStmt(new list<StmtAst*>());
-    ($$)->print(0);std::cout<<std::endl;
+    //($$)->print(0);std::cout<<std::endl;
   }
 	| '{' statement_list '}'
   {
     $$ = new BlockStmt($2);
-    ($$)->print(0);std::cout<<std::endl;
+    //($$)->print(0);std::cout<<std::endl;
   }
   | '{' declaration_list statement_list '}'
   {
     $$ = new BlockStmt($3);
-    ($$)->print(0);std::cout<<std::endl;
+    //($$)->print(0);std::cout<<std::endl;
   }
 	;
 
@@ -277,6 +330,7 @@ primary_expression
   {
     $$ = new op2($1,"ASSIGN",$3);
     //($$)->print(0);std::cout<<std::endl;
+    
   }
 	| INT_CONSTANT
   {
@@ -304,8 +358,13 @@ l_expression
         {
           $$ = new ArrayRef(new IDENTIFIERAST($1));
           //($$)->print(0);std::cout<<std::endl;
-          
+          int exitcode = localtable->inScope($1);
+          if (exitcode < 0) {
+            cerr << "Undeclared variable : " << $1 << "\n";
+            ABORT();
+          }
         }
+
         | l_expression '[' expression ']'
         {
           ((ArrayRef*)$1)->addExpAst($3);
@@ -323,7 +382,7 @@ expression_list
         | expression_list ',' expression
         {
           ((list<ExpAst*>*)$1)->push_back($3);
-          $$ = $1; 
+          $$ = $1;
         }
         ;
 
@@ -360,12 +419,12 @@ iteration_statement
   ;
 
 declaration_list
-        : declaration  					
-        | declaration_list declaration
-	;
+  : declaration  					
+  | declaration_list declaration
+  ;
 
 declaration
-	: type_specifier declarator_list';'
+	: type_specifier declarator_list ';'
 	;
 
 declarator_list

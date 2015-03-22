@@ -1,6 +1,20 @@
+int remake(){
+	return 3*4;
+}
+
+void swap(int x, int y){
+	int p;
+	return 0;
+}
+
 int main()
 {
 	int x, y;
+	float p[4][5];
+
+	// z = 30;
+	// int z[200];
+
 	for (x=0; x <10; x++);
 	if (y >1) {x=x-1; y=y+1;} else ;
 }

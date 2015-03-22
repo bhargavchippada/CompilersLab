@@ -13,7 +13,7 @@ class ExpAst : public abstract_astnode {
 	public:
 
     virtual void print (int level){
-        cout<<string(level, ' ')<<"This is an abstract EXpAst class"<<endl;
+        cout<<string(level, ' ')<<"This is an abstract EXpAst class" << endl;
     }
 };
 
@@ -28,9 +28,9 @@ class StmtAst : public abstract_astnode {
 class INTCONST : public ExpAst {
   protected:
     int Num;
+    string type = "int";
 
   public:
-    
     INTCONST(int n){
     	Num = n;
     }
@@ -39,9 +39,14 @@ class INTCONST : public ExpAst {
     	Num = n;
     }
 
+    string getType(){
+        return type;
+    }
+
     int evaluate(){
     	return Num;
     }
+
 
     void print(int level){
     	cout<<string(level, ' ')<<"(IntConst "<<Num<<")";
@@ -51,15 +56,19 @@ class INTCONST : public ExpAst {
 class FLOATCONST : public ExpAst {
   protected:
     float Num;
+    string type = "float";
 
   public:
-    
     FLOATCONST(float f){
         Num = f;
     }
 
     void setValue(float f){
         Num = f;
+    }
+
+    string getType(){
+        return type;
     }
 
     float evaluate(){
@@ -74,6 +83,7 @@ class FLOATCONST : public ExpAst {
 class STRINGCONST : public ExpAst {
   protected:
     string strlit;
+    string type = "string";
 
   public:
     
@@ -83,6 +93,10 @@ class STRINGCONST : public ExpAst {
 
     void setValue(string s){
         strlit = s;
+    }
+
+    string getType(){
+        return type;
     }
 
     string evaluate(){
@@ -99,7 +113,6 @@ class IDENTIFIERAST : public ExpAst {
     string identifier;
 
   public:
-    
     IDENTIFIERAST(string s){
         identifier = s;
     }
