@@ -6,8 +6,10 @@ execute:
 	flexc++ lex.l;
 	#sed -i '/include/a #include "Parserbase.h"' Scanner.ih;
 	bisonc++ parse.y;
-	sed -i '/Frank B. Brokken/a bool isParam = true; string varType; symbTable *localtable = new symbTable("temp", gobltable);' parse.cc;
-	sed -i '/Frank B. Brokken/a symbTable *gobltable = new symbTable("gobl", NULL);' parse.cc;
+	#sed -i '/Frank B. Brokken/a bool isParam = true; string varType; symbTable *localtable = new symbTable("temp", gobltable);' parse.cc;
+	#sed -i '/Frank B. Brokken/a symbTable *gobltable = new symbTable("gobl", NULL);' parse.cc;
+	sed -i '/Frank B. Brokken/a extern bool isParam; extern string varType; extern symbTable *localtable;' parse.cc;
+	sed -i '/Frank B. Brokken/a extern symbTable *gobltable;' parse.cc;
 	#sed -i '/insert preincludes/a #include "ASTClasses.ih"' Parserbase.h;
 	#sed -i '/include "Parser.ih"/a #include "ASTClasses.ih"' parse.cc;
 	./sedscript

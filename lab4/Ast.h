@@ -2,12 +2,21 @@
 #define Ast_h_included
 
 #include "abstract_astnode.h"
+#include "symbol_table.h"
 #include <iostream>
 #include <stdio.h>
 #include <string>
 #include <list>
 
 using namespace std;
+
+namespace // anonymous
+{
+    bool isParam = true;
+    string varType;
+    symbTable *gobltable = new symbTable("gobl", NULL);
+    symbTable *localtable = new symbTable("temp", gobltable);
+}
 
 class ExpAst : public abstract_astnode {
 	public:
