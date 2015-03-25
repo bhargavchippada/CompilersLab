@@ -357,17 +357,14 @@ l_expression
         : IDENTIFIER
         {
           $$ = new ArrayRef(new IDENTIFIERAST($1));
+          if (exitcode) ABORT();
           //($$)->print(0);std::cout<<std::endl;
-          int exitcode = localtable->inScope($1);
-          if (exitcode < 0) {
-            cerr << "Undeclared variable : " << $1 << "\n";
-            ABORT();
-          }
         }
 
         | l_expression '[' expression ']'
         {
           ((ArrayRef*)$1)->addExpAst($3);
+          if (exitcode) ABORT();
           $$ = $1;
           //($$)->print(0);std::cout<<std::endl;
         }

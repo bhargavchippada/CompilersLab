@@ -16,13 +16,25 @@ namespace // anonymous
     string varType;
     symbTable *gobltable = new symbTable("gobl", NULL);
     symbTable *localtable = new symbTable("temp", gobltable);
+    bool exitcode = false;
 }
 
 class ExpAst : public abstract_astnode {
+    protected:
+    string type;
+
 	public:
 
     virtual void print (int level){
-        cout<<string(level, ' ')<<"This is an abstract EXpAst class" << endl;
+        cout<<string(level, ' ')<<"This is an abstract ExpAst class" << endl;
+    }
+
+    virtual string getType(){
+        return type;
+    }
+
+    virtual string getExpStr(){
+        return "Virtual expstr";
     }
 };
 
@@ -56,6 +68,9 @@ class INTCONST : public ExpAst {
     	return Num;
     }
 
+    string getExpStr(){
+        return "(IntConst "+to_string(Num)+")";
+    }
 
     void print(int level){
     	cout<<string(level, ' ')<<"(IntConst "<<Num<<")";
@@ -82,6 +97,10 @@ class FLOATCONST : public ExpAst {
 
     float evaluate(){
         return Num;
+    }
+
+    string getExpStr(){
+        return "(FloatConst "+to_string(Num)+")";
     }
 
     void print(int level){
@@ -120,14 +139,24 @@ class STRINGCONST : public ExpAst {
 class IDENTIFIERAST : public ExpAst {
   protected:
     string identifier;
+    string type;
 
   public:
     IDENTIFIERAST(string s){
         identifier = s;
+        type = localtable->giveType(s);
+        if(type=="NULL") {
+            cerr<<"Variable is used without declaration: "+s<<endl;
+            exitcode=true;
+        }
     }
 
     void setValue(string s){
         identifier = s;
+    }
+
+    string getType(){
+        return type;
     }
 
     string evaluate(){
@@ -152,6 +181,10 @@ class ArrayRef : public ExpAst {
     }
 
     void addExpAst(ExpAst *expast){
+        if(expast->getType()!="int"){
+            cerr<<"Invalid array parameter: "+expast->getExpStr()<<endl;
+            exitcode=true;
+        }
     	(*expAstList).push_back(expast);
     }
 
