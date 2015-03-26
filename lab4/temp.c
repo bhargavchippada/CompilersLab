@@ -1,6 +1,9 @@
 #include <stdio.h>
 
+int swap(){
+	return 4.5;
+}
+
 main(){
-	float i = (2=3);
-	printf("%f\n",i);
+	printf("%d\n",swap());
 }

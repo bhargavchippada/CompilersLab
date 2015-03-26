@@ -38,12 +38,13 @@ translation_unit
 function_definition
 	: type_specifier fun_declarator compound_statement 
   {
-    localtable->returntype = $1;
+    //localtable->returntype = $1;
     localtable->printTable();
     symbTable *localtableTemp = new symbTable("temp", gobltable);
     *localtableTemp = *localtable;
     localtable = new symbTable("temp", gobltable);
     isParam = true;
+    funType = true;
     int exitcode = gobltable->addEntity(localtableTemp->tablename ,"fun", $1,false,   localtableTemp);
     if (exitcode < 0) {cerr<<"line number: "<<lineno<<endl; ABORT();}
   }
@@ -54,16 +55,28 @@ type_specifier
   {
     $$ = "VOID";
     varType = "VOID";
+    if(funType){
+      localtable->returntype = $$;
+      funType = false;
+    }
   } 	
   | INT
   {
     $$ = "INT";
     varType = "INT";
+    if(funType){
+      localtable->returntype = $$;
+      funType = false;
+    }
   }
 	| FLOAT
   {
     $$ = "FLOAT";
     varType = "FLOAT";
+    if(funType){
+      localtable->returntype = $$;
+      funType = false;
+    }
   }
   ;
 
@@ -173,6 +186,7 @@ statement
   | RETURN expression ';'
   {
     $$ = new ReturnStmt($2);
+    if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
   ;

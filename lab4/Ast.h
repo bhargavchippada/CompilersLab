@@ -13,6 +13,7 @@ using namespace std;
 namespace // anonymous
 {
     bool isParam = true;
+    bool funType = true;
     string varType;
     symbTable *gobltable = new symbTable("gobl", NULL);
     symbTable *localtable = new symbTable("temp", gobltable);
@@ -47,6 +48,10 @@ class StmtAst : public abstract_astnode {
 
     virtual void print (int level){
         cout<<string(level, ' ')<<"This is an abstract StmtAst class"<<endl;
+    }
+
+    virtual bool validate(){
+        cerr<<"stmtast default validation"<<endl;
     }
 };
 
@@ -498,6 +503,16 @@ class ReturnStmt : public StmtAst{
     public:
         ReturnStmt(ExpAst *expast){
             returnExp = expast;
+        }
+
+        bool validate(){
+            if(returnExp->getType()==localtable->returntype){
+                return true;
+            }else{
+                cerr<<"Incorrect return type: "+returnExp->getType()+" of "+returnExp->getExpStr()+
+                " when "+localtable->returntype+" is expected"<<endl;
+                return false;
+            }
         }
 
         void print(int level){
