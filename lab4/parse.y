@@ -301,6 +301,7 @@ unary_expression
 	| unary_operator postfix_expression
   {
     $$ = new op1($1,$2);
+    if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
 	;
@@ -313,20 +314,21 @@ postfix_expression
   | IDENTIFIER '(' ')'
   {
     $$ = new FUNCALL(new IDENTIFIERAST($1));
-    if(!(((FUNCALL*) $$)->validate())) ABORT();
+    if(!(((FUNCALL*) $$)->validate())) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
   | IDENTIFIER '(' expression_list ')'
   {
     $$ = new FUNCALL(new IDENTIFIERAST($1));
     ((FUNCALL*) $$)->addExpAstList($3);
-    if(!(((FUNCALL*) $$)->validate())) ABORT();
+    if(!(((FUNCALL*) $$)->validate())) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
   | l_expression INC_OP
   {
     if(!($1)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     $$ = new op1("PP",$1);
+    if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
   ;

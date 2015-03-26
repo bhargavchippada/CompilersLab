@@ -253,6 +253,22 @@ class ArrayRef : public ExpAst {
         }
     }
 
+    string getExpStr(){
+        string expstr="";
+        if(expAstList->size()==0){
+            expstr+=identifier->getExpStr();
+        }else{
+            expstr+="(ArrayRef "+identifier->getExpStr();
+            for (list<ExpAst*>::iterator it = expAstList->begin(); it != expAstList->end(); it++){
+                expstr+="[";
+                expstr+=(*it)->getExpStr();
+                expstr+="]";
+            }
+            expstr+=")";
+        }
+        return expstr;
+    }
+
     void print(int level){
         if(expAstList->size()==0){
             identifier->print(level);
@@ -285,6 +301,10 @@ class Cast : public ExpAst{
             return true; // because this class is created only if its valid
         }
 
+        string getExpStr(){
+            return "(TO_"+type+" "+singleExpAst->getExpStr()+")";
+        }
+
         void print(int level){
             cout<<string(level, ' ')<<"(TO_"<<type<<" ";
             singleExpAst->print(0);
@@ -313,6 +333,10 @@ class op2 : public ExpAst{
             */
         }
 
+        string getExpStr(){
+             return "("+op+"_"+type+" "+leftExpAst->getExpStr()+" "+rightExpAst->getExpStr()+")";
+        }
+
         void print (int level){
             cout<<string(level, ' ')<<"("<<op<<"_"<<type<<" ";
             leftExpAst->print(0);
@@ -327,11 +351,33 @@ class op1 : public ExpAst{
     protected:
         ExpAst *singleExpAst;
         string op;
+        string type="?";
+
     public:
         op1(string ope, ExpAst *singleExp): op(ope), singleExpAst(singleExp){}
 	    
+        string getType(){
+            return type;
+        }
+
+        bool validate(){
+            string exptype = singleExpAst->getType();
+            if(exptype=="int") type="int";
+            else if(exptype=="float") type="float";
+            else {
+                type="NULL";
+                cerr<<"Invalid array parameter: "+singleExpAst->getExpStr()<<endl;
+                return false;
+            }
+            return true;
+        }
+
+        string getExpStr(){
+             return "("+op+"_"+type+" "+singleExpAst->getExpStr()+")";
+        }
+
 	    void print(int level){
-	        cout<<string(level, ' ')<<"("<<op<<" ";
+	        cout<<string(level, ' ')<<"("<<op<<"_"<<type<<" ";
 	        singleExpAst->print(0);
             cout<<")";
 	    }
@@ -375,6 +421,17 @@ class FUNCALL : public ExpAst{
                     return false;
                 }
             }
+        }
+
+        string getExpStr(){
+            string expstr="(FunCall "+funcName->getExpStr()+"{";
+            for (list<ExpAst*>::iterator it = expSequence->begin(); it != expSequence->end();){
+                expstr+=(*it)->getExpStr();
+                it++;
+                if(it != expSequence->end()) expstr+=",";
+            }
+            expstr+="}";
+            return expstr;
         }
 
 		void print(int level){

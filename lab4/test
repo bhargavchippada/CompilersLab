@@ -13,7 +13,7 @@ int main()
 	float p[4][5];
 
 	p[4][1] = swap(2,3);
-	y = -p[2];
+	y = "hello";
 	//swap = 30;
 	// int z[200];
 
