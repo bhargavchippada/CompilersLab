@@ -235,7 +235,6 @@ class ArrayRef : public ExpAst {
     }
 
     bool validate(){
-        cout<<"call call"<<endl;
         string varName = identifier->getId();
         entity *ent = localtable->findInScope(varName,"var");
         if(ent==NULL){

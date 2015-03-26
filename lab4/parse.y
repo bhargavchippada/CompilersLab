@@ -185,7 +185,7 @@ assignment_statement
   }							
 	|  l_expression '=' expression ';'
   {
-    if(($1)->validate()) ABORT();
+    if(!($1)->validate()) ABORT();
     $$ = new AssStmt($1,$3);
     //($$)->print(0);std::cout<<std::endl;
   }	
@@ -313,21 +313,19 @@ postfix_expression
   | IDENTIFIER '(' ')'
   {
     $$ = new FUNCALL(new IDENTIFIERAST($1));
-    ((FUNCALL*) $$)->validate();
-    if (exitcode) ABORT();
+    if(!(((FUNCALL*) $$)->validate())) ABORT();
     //($$)->print(0);std::cout<<std::endl;
   }
   | IDENTIFIER '(' expression_list ')'
   {
     $$ = new FUNCALL(new IDENTIFIERAST($1));
     ((FUNCALL*) $$)->addExpAstList($3);
-    ((FUNCALL*) $$)->validate();
-    if (exitcode) ABORT();
+    if(!(((FUNCALL*) $$)->validate())) ABORT();
     //($$)->print(0);std::cout<<std::endl;
   }
   | l_expression INC_OP
   {
-    if(($1)->validate()) ABORT();
+    if(!(($1)->validate())) ABORT();
     $$ = new op1("PP",$1);
     //($$)->print(0);std::cout<<std::endl;
   }
@@ -336,12 +334,12 @@ postfix_expression
 primary_expression
 	: l_expression
   {
-    if(($1)->validate()) ABORT();
+    if(!(($1)->validate())) ABORT();
     $$ = $1;
   }
   | l_expression '=' expression // added this production
   {
-    if(($1)->validate()) ABORT();
+    if(!(($1)->validate())) ABORT();
     $$ = new op2($1,"ASSIGN",$3);
     //($$)->print(0);std::cout<<std::endl;
     
