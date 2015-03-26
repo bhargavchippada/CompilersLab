@@ -357,7 +357,7 @@ class op2 : public ExpAst{
                     type="INT";
                     return true;
                 }
-                
+
                 //type cast right expast
                 Cast *cast = new Cast("FLOAT",rightExpAst);
                 rightExpAst = cast;
@@ -457,6 +457,29 @@ class FUNCALL : public ExpAst{
                 symbTable *func = ent->funcPtr;
                 if(func->numofparams == expSequence->size()){
                     type = func->returntype;
+
+                    list<ExpAst*>::iterator it = expSequence->begin();
+                    for(int i=0; i<func->numofparams && it != expSequence->end(); i++){
+                        string ltype = func->symtable[i]->type;
+                        string rtype = (*it)->getType();
+                        if(ltype=="INT" && rtype=="INT");
+                        else if(ltype=="FLOAT" && rtype=="FLOAT");
+                        else if(ltype=="INT" && rtype=="FLOAT"){
+                            //type cast right expast to int
+                            Cast *cast = new Cast("INT",(*it));
+                            (*it) = cast;
+                        }else if(ltype=="FLOAT" && rtype=="INT"){
+                            //type cast right expast
+                            Cast *cast = new Cast("FLOAT",*it);
+                            *it = cast;
+                        }else{
+                            cerr<<"Type mismatch for parameter "<<(i+1)<<" of the function "+funcName->getExpStr()<<endl;
+                            return false;
+                        }
+
+                        it++;
+                    }
+                    
                     return true;
                 }else{
                     cerr<<"Wrong number of parameters: "+varName<<endl;
