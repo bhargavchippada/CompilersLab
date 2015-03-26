@@ -1,6 +1,10 @@
-#include <iostream>
+#include <stdio.h>
 
-struct p{
-	int x,y;
-	p();
-};	
+void swap(){
+	int a =2;
+}
+
+main(){
+	int swap = 0;
+	printf("%d\n",swap);
+}

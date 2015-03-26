@@ -21,7 +21,7 @@ namespace // anonymous
 
 class ExpAst : public abstract_astnode {
     protected:
-    string type;
+    string type="default";
 
 	public:
 
@@ -35,6 +35,10 @@ class ExpAst : public abstract_astnode {
 
     virtual string getExpStr(){
         return "Virtual expstr";
+    }
+
+    virtual bool validate(){
+        cerr<<"default validation"<<endl;
     }
 };
 
@@ -68,6 +72,10 @@ class INTCONST : public ExpAst {
     	return Num;
     }
 
+    bool validate(){
+        return true;
+    }
+
     string getExpStr(){
         return "(IntConst "+to_string(Num)+")";
     }
@@ -97,6 +105,10 @@ class FLOATCONST : public ExpAst {
 
     float evaluate(){
         return Num;
+    }
+
+    bool validate(){
+        return true;
     }
 
     string getExpStr(){
@@ -131,6 +143,14 @@ class STRINGCONST : public ExpAst {
         return strlit;
     }
 
+    bool validate(){
+        return true;
+    }
+
+    string getExpStr(){
+        return "(StringConst "+strlit+")";
+    }
+
     void print(int level){
         cout<<string(level, ' ')<<"(StringConst "<<strlit<<")";
     }
@@ -139,16 +159,17 @@ class STRINGCONST : public ExpAst {
 class IDENTIFIERAST : public ExpAst {
   protected:
     string identifier;
-    string type;
+    string type="NULL";
 
   public:
     IDENTIFIERAST(string s){
         identifier = s;
-        type = localtable->giveType(s);
-        if(type=="NULL") {
+        /*
+        if(!localtable->inScope(s)) {
             cerr<<"Variable is used without declaration: "+s<<endl;
             exitcode=true;
         }
+        */
     }
 
     void setValue(string s){
@@ -159,8 +180,28 @@ class IDENTIFIERAST : public ExpAst {
         return type;
     }
 
+    string getId(){
+        return identifier;
+    }
+
     string evaluate(){
         return identifier;
+    }
+
+    bool validate(){
+        entity *ent = localtable->findInScope(identifier,"var");
+        if(ent==NULL){
+            cerr<<"Variable is used without declaration: "+identifier<<endl;
+            exitcode=true;
+            return false;
+        }else {
+            type = ent->type;
+            return true;
+        }
+    }
+
+    string getExpStr(){
+        return "(Id "+identifier+")";
     }
 
     void print(int level){
@@ -172,6 +213,7 @@ class ArrayRef : public ExpAst {
   protected:
     IDENTIFIERAST *identifier;
     list<ExpAst*> *expAstList;
+    string type;
 
   public:
     
@@ -186,6 +228,30 @@ class ArrayRef : public ExpAst {
             exitcode=true;
         }
     	(*expAstList).push_back(expast);
+    }
+
+    string getType(){
+        return type;
+    }
+
+    bool validate(){
+        cout<<"call call"<<endl;
+        string varName = identifier->getId();
+        entity *ent = localtable->findInScope(varName,"var");
+        if(ent==NULL){
+            cerr<<"Variable is used without declaration: "+varName<<endl;
+            exitcode=true;
+            return false;
+        }else{
+            if(ent->dimensions.size() == expAstList->size()){
+                type = ent->type;
+                return true;
+            }else{
+                cerr<<"Wrong number of indices: "+varName<<endl;
+                exitcode=true;
+                return false;
+            }
+        }
     }
 
     void print(int level){
@@ -205,20 +271,56 @@ class ArrayRef : public ExpAst {
     }
 };
 
+class Cast : public ExpAst{
+    protected:
+        ExpAst *singleExpAst;
+        string type;
+    public:
+        Cast(string ty, ExpAst *singleExp): type(ty), singleExpAst(singleExp){}
+        
+        string getType(){
+            return type;
+        }
+
+        bool validate(){
+            return true; // because this class is created only if its valid
+        }
+
+        void print(int level){
+            cout<<string(level, ' ')<<"(TO_"<<type<<" ";
+            singleExpAst->print(0);
+            cout<<")";
+        }
+};
+
 class op2 : public ExpAst{
     protected:
         ExpAst *leftExpAst;
         ExpAst *rightExpAst;
         string op;
+        string type="?";
+
     public:
         op2(ExpAst *left, string ope, ExpAst *right): leftExpAst(left), op(ope), rightExpAst(right){}
-    void print (int level){
-        cout<<string(level, ' ')<<"("<<op<<" ";
-        leftExpAst->print(0);
-        cout<<" ";
-        rightExpAst->print(0);
-        cout<<")";
-    }
+
+        string getType(){
+            return type;
+        }
+
+        bool validate(){
+            /*
+            if(left->getType()=="int" && right->getType()=="int") type="int";
+            return true;
+            */
+        }
+
+        void print (int level){
+            cout<<string(level, ' ')<<"("<<op<<"_"<<type<<" ";
+            leftExpAst->print(0);
+            cout<<" ";
+            rightExpAst->print(0);
+            cout<<")";
+        }
 };
 
 
@@ -240,6 +342,7 @@ class FUNCALL : public ExpAst{
 	protected:
 		IDENTIFIERAST *funcName;
 		list<ExpAst*> *expSequence;
+        string type;
 	
 	public:
 		FUNCALL(IDENTIFIERAST *iden){
@@ -250,6 +353,30 @@ class FUNCALL : public ExpAst{
 		void addExpAstList(list<ExpAst*> *expastlist){
 			expSequence=expastlist;
 		}
+
+        string getType(){
+            return type;
+        }
+
+        bool validate(){
+            string varName = funcName->getId();
+            entity *ent = localtable->findInScope(varName,"fun");
+            if(ent==NULL){
+                cerr<<"Function is used without declaration: "+varName<<endl;
+                exitcode=true;
+                return false;
+            }else{
+                symbTable *func = ent->funcPtr;
+                if(func->numofparams == expSequence->size()){
+                    type = func->returntype;
+                    return true;
+                }else{
+                    cerr<<"Wrong number of parameters: "+varName<<endl;
+                    exitcode=true;
+                    return false;
+                }
+            }
+        }
 
 		void print(int level){
             cout<<string(level, ' ')<<"(FunCall ";

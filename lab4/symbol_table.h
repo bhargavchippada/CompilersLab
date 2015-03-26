@@ -38,8 +38,6 @@ struct entity{
 			}
 			cout << endl;
 		}
-		// if(funcPtr==NULL) cout << "Entity Type : local variable\n";
-		// else funcPtr->printTable();
 	}
 	
 };
@@ -47,7 +45,9 @@ struct entity{
 
 struct symbTable{
 	string tablename, returntype;
+	int numofparams=0;
 	map<string, entity> table;		// maps variable name to entity
+	vector<entity*> symtable;
 	symbTable* parentPtr;
 	int paramoffset, offset;
 
@@ -65,32 +65,54 @@ struct symbTable{
 		return -1;
 	}
 
-	void addArray(string arrayName, int dimension, bool isParam){
-		map<string, entity> :: iterator mapItr = table.find(arrayName);
-		if (mapItr == table.end()){
+	entity* find(string varName){
+		for(int i=0; i<symtable.size();i++){
+			if(symtable[i]->name==varName) return symtable[i];
+		}
+		return NULL;
+	}
+
+	entity* findInScope(string varName, string varType){
+		for(int i=0; i<symtable.size();i++){
+			if(symtable[i]->name==varName && symtable[i]->varType==varType) return symtable[i];
+		}
+		if(parentPtr!=NULL) return parentPtr->findInScope(varName,varType);
+		return NULL;
+	}
+
+	int addArray(string arrayName, int dimension, bool isParam){
+		if(dimension<=0){
+			cerr<<"Invalid indice "<<dimension<<" for array "<<arrayName<<endl;
+			return -1;
+		}
+
+		entity *var = find(arrayName);
+		if(var==NULL){
 			// can't arise
 			cout << "Error: " << arrayName << " not defined!\n";
-		}
-		else{
+			return -1;
+		}else{
 			if(isParam) {
-				paramoffset += (mapItr->second).size;
-				paramoffset -= ((mapItr->second).size * dimension);
-				(mapItr->second).size = ((mapItr->second).size * dimension);
-				(mapItr->second).offset = paramoffset;
-				(mapItr->second).dimensions.push_back(dimension);
+				paramoffset += var->size;
+				paramoffset -= (var->size * dimension);
+				var->size = (var->size * dimension);
+				var->offset = paramoffset;
+				var->dimensions.push_back(dimension);
 			}else{
-				offset -= (mapItr->second).size;
-				(mapItr->second).offset = offset;
-				offset += ((mapItr->second).size * dimension);
-				(mapItr->second).size = ((mapItr->second).size * dimension);
-				(mapItr->second).dimensions.push_back(dimension);
+				offset -= var->size;
+				var->offset = offset;
+				offset += (var->size * dimension);
+				var->size = (var->size * dimension);
+				var->dimensions.push_back(dimension);
 			}
 		}
+
+		return 0;
 	}
 
 	int addEntity(string n, string t, string ty, bool isParam, symbTable* pptr){
-		map<string, entity> :: iterator mapItr = table.find(n);
-		if (mapItr != table.end()){
+		entity *var = find(n);
+		if (var != NULL){
 			cerr << "Previously defined: "  << n  << "\n";
 			return -1;
 		}
@@ -99,20 +121,21 @@ struct symbTable{
 		if (t == "fun") s = 0;
 		if(isParam) {
 			paramoffset-=s;
-			entity newEntity(n, t, ty, s, paramoffset, pptr);
-			table.insert(map<string, entity>::value_type(n, newEntity));
+			entity *newEntity = new entity(n, t, ty, s, paramoffset, pptr);
+			symtable.push_back(newEntity);
 		}else{
-			entity newEntity(n, t, ty, s, offset,pptr);
+			entity *newEntity = new entity(n, t, ty, s, offset,pptr);
 			offset+=s;
-			table.insert(map<string, entity>::value_type(n, newEntity));
+			symtable.push_back(newEntity);
 		}
+
 		return 0;
 	}
 
 
 	bool inScope(string varName){
-		map<string, entity> :: iterator mapItr = table.find(varName);
-		if (mapItr == table.end()){
+		entity *var = find(varName);
+		if (var == NULL){
 			if(parentPtr!=NULL){
 				return parentPtr->inScope(varName);
 			}
@@ -124,41 +147,38 @@ struct symbTable{
 	}
 
 	string giveVarType(string varName){
-		map<string, entity> :: iterator mapItr = table.find(varName);
-		if (mapItr == table.end()){
+		entity *var = find(varName);
+		if (var == NULL){
 			if(parentPtr!=NULL){
 				return parentPtr->giveVarType(varName);
 			}
 			return "NULL"; // or "NOT FOUND"
 		}else{
-			return (mapItr->second).varType;
+			return var->varType;
 		}
 	}
 
 	string giveType(string varName){
-		map<string, entity> :: iterator mapItr = table.find(varName);
-		if (mapItr == table.end()){
+		entity *var = find(varName);
+		if (var == NULL){
 			if(parentPtr!=NULL){
 				return parentPtr->giveType(varName);
 			}
 			return "NULL"; // or "NOT FOUND"
 		}else{
-			return (mapItr->second).type;
+			return var->type;
 		}
 	}
 
 	void printTable(){
 		cout << "----------------------\nTable Name : "<<tablename<<"\n";
-		if (parentPtr != NULL) cout << "Return Type : "<< returntype <<"\n\n";
-		map<string, entity> :: iterator mapItr = table.begin();
-		while(mapItr != table.end()){
-			(mapItr->second).printVarInfo();
-			
-			if((mapItr->second).varType == "fun" and ((mapItr->second).funcPtr) != NULL){
-				((mapItr->second).funcPtr)->printTable();
+		if (parentPtr != NULL) cout << "Return Type : "<< returntype <<"\n";
+		cout<<"Num of params: "<<numofparams<<"\n\n";
+		for(int i=0; i<symtable.size();i++){
+			symtable[i]->printVarInfo();
+			if(symtable[i]->varType == "fun" and (symtable[i]->funcPtr) != NULL){
+				(symtable[i]->funcPtr)->printTable();
 			}
-			
-			mapItr++;
 			cout<<endl;
 		}
 		if(parentPtr==NULL) cout << "Table Type : Global\n";
@@ -166,73 +186,5 @@ struct symbTable{
 		cout << "----------------------\n";
 	}
 };
-
-
-
-// entity::entity(string n, string t, string ty, int s, int o, symbTable* ptr) : name(n), varType(t), type(ty), size(s), offset(o), funcPtr(ptr){}
-
-// void entity::printVarInfo(){
-// 		cout<< "symbol name: " << name << "\n";
-// 		cout << "var/fun : " << varType << "\n";
-// 		cout << "type/return.type : " << type << "\n";
-// 		cout << "size : " << size << "\n";
-// 		cout << "offset : " << offset << "\n";
-		
-// 		if(funcPtr==NULL) cout << "Entity Type : local variable\n";
-// 		else funcPtr->printTable();
-// 	}
-//ebp -> base pointer
-/*
-
-
-
-struct globalSymbolTable{
-	map<string, symbTable> GST;			// maps function name to symbol table of function
-	map<string, symbTable> :: iterator globItr;
-
-	// If a global offset is used
-	int currentOffset;
-
-	globalSymbolTable(){
-		currentOffset = 0;	// may be different
-		GST.clear();
-	}
-
-	void addEntityToFunction(string funcName, string varName, string type, int size, bool isPar){
-		globItr = GST.find(funcName);
-		if (globItr == GST.end()){
-			symbTable* newSymbTable = new symbTable();
-			GST[funcName] = *newSymbTable;
-			globItr = GST.find(funcName);
-		}
-		
-		(globItr->second).addEntity(varName, type, size, isPar, currentOffset);
-		currentOffset+=size;
-	}
-
-	bool inScopeOfFunction(string funcName, string varName){
-		globItr = GST.find(funcName);
-		if (globItr == GST.end()) return false;
-		return (globItr->second).inScope(varName);
-	}
-
-	string giveTypeInFunction(string funcName, string varName){			// inherited attribute and varname lexeme
-		globItr = GST.find(funcName);
-		if (globItr == GST.end()) return "NULL"; // i.e. function doesn't exists
-		return (globItr->second).giveType(varName);
-	}
-
-	void printAll(){
-		printf("%s\n\n", "Printing global symbol table: ");
-		globItr = GST.begin();
-		while(globItr != GST.end()){
-			cout << "Printing local symbol table of function " << globItr->first << " :\n";
-			(globItr->second).printLocalTable();
-			globItr++;
-		}
-	}
-};
-*/
-
 
 #endif

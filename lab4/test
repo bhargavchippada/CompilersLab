@@ -12,8 +12,9 @@ int main()
 	int x, y;
 	float p[4][5];
 
-	p[4][1.5] = 30;
-	// z = 30;
+	p[4][1] = swap(2,3);
+	y = -p[2];
+	//swap = 30;
 	// int z[200];
 
 	for (x=0; x <10; x++);
