@@ -39,7 +39,7 @@ class ExpAst : public abstract_astnode {
     }
 
     virtual bool validate(){
-        cerr<<"default validation"<<endl;
+        cerr<<"Error! default validation"<<endl;
     }
 };
 
@@ -51,7 +51,7 @@ class StmtAst : public abstract_astnode {
     }
 
     virtual bool validate(){
-        cerr<<"stmtast default validation"<<endl;
+        cerr<<"Error! stmtast default validation"<<endl;
     }
 };
 
@@ -171,7 +171,7 @@ class IDENTIFIERAST : public ExpAst {
         identifier = s;
         /*
         if(!localtable->inScope(s)) {
-            cerr<<"Variable is used without declaration: "+s<<endl;
+            cerr<<"Error! Variable is used without declaration: "+s<<endl;
             exitcode=true;
         }
         */
@@ -196,7 +196,7 @@ class IDENTIFIERAST : public ExpAst {
     bool validate(){
         entity *ent = localtable->findInScope(identifier,"var");
         if(ent==NULL){
-            cerr<<"Variable is used without declaration: "+identifier<<endl;
+            cerr<<"Error! Variable is used without declaration: "+identifier<<endl;
             exitcode=true;
             return false;
         }else {
@@ -229,7 +229,7 @@ class ArrayRef : public ExpAst {
 
     void addExpAst(ExpAst *expast){
         if(expast->getType()!="INT"){
-            cerr<<"Invalid array index, not of type INT: "+expast->getExpStr()<<endl;
+            cerr<<"Error! Invalid array index, not of type INT: "+expast->getExpStr()<<endl;
             exitcode=true;
         }
     	(*expAstList).push_back(expast);
@@ -243,7 +243,7 @@ class ArrayRef : public ExpAst {
         string varName = identifier->getId();
         entity *ent = localtable->findInScope(varName,"var");
         if(ent==NULL){
-            cerr<<"Variable is used without declaration: "+varName<<endl;
+            cerr<<"Error! Variable is used without declaration: "+varName<<endl;
             exitcode=true;
             return false;
         }else{
@@ -251,7 +251,7 @@ class ArrayRef : public ExpAst {
                 type = ent->type;
                 return true;
             }else{
-                cerr<<"Wrong number of indices: "+varName<<endl;
+                cerr<<"Error! Wrong number of indices: "+varName<<endl;
                 exitcode=true;
                 return false;
             }
@@ -364,7 +364,7 @@ class op2 : public ExpAst{
                 type = "FLOAT";
             }else{
                 type="NULL";
-                cerr<<"Invalid operation ("+leftExpAst->getExpStr()+" of type "+ltype+") "+op+
+                cerr<<"Error! Invalid operation ("+leftExpAst->getExpStr()+" of type "+ltype+") "+op+
                                             " ("+rightExpAst->getExpStr()+" of type "+rtype+")"<<endl;
                 return false;
             }
@@ -389,7 +389,6 @@ class op2 : public ExpAst{
         }
 };
 
-
 class op1 : public ExpAst{
     protected:
         ExpAst *singleExpAst;
@@ -409,7 +408,7 @@ class op1 : public ExpAst{
             else if(exptype=="FLOAT") type="FLOAT";
             else {
                 type="NULL";
-                cerr<<"Cannot apply unary operator to type "+singleExpAst->getType()+" of "+singleExpAst->getExpStr()<<endl;
+                cerr<<"Error! Cannot apply unary operator to type "+singleExpAst->getType()+" of "+singleExpAst->getExpStr()<<endl;
                 return false;
             }
             return true;
@@ -450,7 +449,7 @@ class FUNCALL : public ExpAst{
             string varName = funcName->getId();
             entity *ent = localtable->findInScope(varName,"fun");
             if(ent==NULL){
-                cerr<<"Function is used without declaration: "+varName<<endl;
+                cerr<<"Error! Function is used without declaration: "+varName<<endl;
                 exitcode=true;
                 return false;
             }else{
@@ -473,7 +472,7 @@ class FUNCALL : public ExpAst{
                             Cast *cast = new Cast("FLOAT",*it);
                             *it = cast;
                         }else{
-                            cerr<<"Type mismatch for parameter "<<(i+1)<<" of the function "+funcName->getExpStr()<<endl;
+                            cerr<<"Error! Type mismatch for parameter "<<(i+1)<<" of the function "+funcName->getExpStr()<<endl;
                             return false;
                         }
 
@@ -482,7 +481,7 @@ class FUNCALL : public ExpAst{
                     
                     return true;
                 }else{
-                    cerr<<"Wrong number of parameters: "+varName<<endl;
+                    cerr<<"Error! Wrong number of parameters: "+varName<<endl;
                     exitcode=true;
                     return false;
                 }
@@ -541,10 +540,15 @@ class ReturnStmt : public StmtAst{
         }
 
         bool validate(){
+            if(localtable->returntype=="VOID"){
+                cerr<<"Error! Function return type is VOID, return statement is not allowed for function "<<localtable->tablename<<endl;
+                return false;
+            }
+
             if(returnExp->getType()==localtable->returntype){
                 return true;
             }else{
-                cerr<<"Incorrect return type: "+returnExp->getType()+" of "+returnExp->getExpStr()+
+                cerr<<"Error! Incorrect return type: "+returnExp->getType()+" of "+returnExp->getExpStr()+
                 " when "+localtable->returntype+" is expected"<<endl;
                 return false;
             }
@@ -578,7 +582,7 @@ class AssStmt : public StmtAst{
                 Cast *cast = new Cast("FLOAT",rightExpAst);
                 rightExpAst = cast;
             }else{
-                cerr<<"Invalid assignment ("+leftExpAst->getExpStr()+" of type "+ltype+") "+"="+
+                cerr<<"Error! Invalid assignment ("+leftExpAst->getExpStr()+" of type "+ltype+") "+"="+
                                             " ("+rightExpAst->getExpStr()+" of type "+rtype+")"<<endl;
                 return false;
             }

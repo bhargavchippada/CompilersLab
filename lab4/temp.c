@@ -1,9 +1,9 @@
 #include <stdio.h>
 
-int swap(){
-	return 4.5;
+int swap(int x){
+	return x*2;
 }
 
 main(){
-	printf("%d\n",swap());
+	printf("%d\n",swap(2.4));
 }

@@ -23,6 +23,17 @@
 %type<ArrayRef> l_expression
 
 %%
+code_unit
+  : translation_unit
+  {
+    entity *mainfunc = gobltable->findInScope("main","fun");
+    if(mainfunc==NULL){
+      cerr<<"Error! main function is not present!"<<endl;
+      ABORT();
+    }
+    cerr<<"Parsing is successful"<<endl;
+  }
+  ;
 
 translation_unit
 	: function_definition 
@@ -129,7 +140,7 @@ constant_expression
     }
     | FLOAT_CONSTANT
     {
-      cerr<<"Invalid parameter "<<$1<<" for array"<<endl;
+      cerr<<"Error! Invalid parameter "<<$1<<" for array"<<endl;
       ABORT();
     }
     ;

@@ -8,7 +8,7 @@ int swap(int p, int q){
 	return 0;
 }
 
-int main()
+int mainn()
 {
 	int x, y;
 	float p[4][5];

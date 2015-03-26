@@ -82,14 +82,14 @@ struct symbTable{
 
 	int addArray(string arrayName, int dimension, bool isParam){
 		if(dimension<=0){
-			cerr<<"Invalid indice "<<dimension<<" for array "<<arrayName<<endl;
+			cerr<<"Error! Invalid indice "<<dimension<<" for array "<<arrayName<<endl;
 			return -1;
 		}
 
 		entity *var = find(arrayName);
 		if(var==NULL){
 			// can't arise
-			cout << "Error: " << arrayName << " not defined!\n";
+			cerr << "Error! " << arrayName << " not defined!\n";
 			return -1;
 		}else{
 			if(isParam) {
@@ -113,7 +113,7 @@ struct symbTable{
 	int addEntity(string n, string t, string ty, bool isParam, symbTable* pptr){
 		entity *var = find(n);
 		if (var != NULL){
-			cerr << "Previously defined: "  << n  << "\n";
+			cerr << "Error! Previously defined: "  << n  << "\n";
 			return -1;
 		}
 
@@ -121,7 +121,7 @@ struct symbTable{
 
 		if (t == "var" && s==0){
 			//means variable of type void which is not valid
-			cerr << "Variable declaration of type void is not valid: "  << n  << endl;
+			cerr << "Error! Variable declaration of type void is not valid: "  << n  << endl;
 			return -1;
 		}
 		
@@ -146,7 +146,7 @@ struct symbTable{
 			if(parentPtr!=NULL){
 				return parentPtr->inScope(varName);
 			}
-			cerr << "Undeclared variable : " << varName << "\n";
+			cerr << "Error! Undeclared variable : " << varName << "\n";
 			return false;
 		}else{
 			return true;
