@@ -14,6 +14,7 @@ int main()
 
 	p[4][1] = swap(2,3);
 	y = "hello";
+	y = y++;
 	//swap = 30;
 	// int z[200];
 

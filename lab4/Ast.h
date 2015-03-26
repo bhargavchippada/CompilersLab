@@ -53,7 +53,7 @@ class StmtAst : public abstract_astnode {
 class INTCONST : public ExpAst {
   protected:
     int Num;
-    string type = "int";
+    string type = "INT";
 
   public:
     INTCONST(int n){
@@ -88,7 +88,7 @@ class INTCONST : public ExpAst {
 class FLOATCONST : public ExpAst {
   protected:
     float Num;
-    string type = "float";
+    string type = "FLOAT";
 
   public:
     FLOATCONST(float f){
@@ -123,7 +123,7 @@ class FLOATCONST : public ExpAst {
 class STRINGCONST : public ExpAst {
   protected:
     string strlit;
-    string type = "string";
+    string type = "STRING";
 
   public:
     
@@ -223,7 +223,7 @@ class ArrayRef : public ExpAst {
     }
 
     void addExpAst(ExpAst *expast){
-        if(expast->getType()!="int"){
+        if(expast->getType()!="INT"){
             cerr<<"Invalid array parameter: "+expast->getExpStr()<<endl;
             exitcode=true;
         }
@@ -328,7 +328,7 @@ class op2 : public ExpAst{
 
         bool validate(){
             /*
-            if(left->getType()=="int" && right->getType()=="int") type="int";
+            if(left->getType()=="INT" && right->getType()=="INT") type="INT";
             return true;
             */
         }
@@ -362,11 +362,11 @@ class op1 : public ExpAst{
 
         bool validate(){
             string exptype = singleExpAst->getType();
-            if(exptype=="int") type="int";
-            else if(exptype=="float") type="float";
+            if(exptype=="INT") type="INT";
+            else if(exptype=="FLOAT") type="FLOAT";
             else {
                 type="NULL";
-                cerr<<"Invalid array parameter: "+singleExpAst->getExpStr()<<endl;
+                cerr<<"Cannot apply unary operator to type "+singleExpAst->getType()+" of "+singleExpAst->getExpStr()<<endl;
                 return false;
             }
             return true;

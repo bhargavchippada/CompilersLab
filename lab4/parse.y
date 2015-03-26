@@ -52,18 +52,18 @@ function_definition
 type_specifier
 	: VOID
   {
-    $$ = "void";
-    varType = "void";
+    $$ = "VOID";
+    varType = "VOID";
   } 	
   | INT
   {
-    $$ = "int";
-    varType = "int";
+    $$ = "INT";
+    varType = "INT";
   }
 	| FLOAT
   {
-    $$ = "float";
-    varType = "float";
+    $$ = "FLOAT";
+    varType = "FLOAT";
   }
   ;
 
