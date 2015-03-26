@@ -369,6 +369,7 @@ class op2 : public ExpAst{
         void print (int level){
             string ptype="";
             if(op!="ASSIGN") ptype= "_"+type;
+            else ptype= "_"+leftExpAst->getType();
             cout<<string(level, ' ')<<"("<<op<<ptype<<" ";
             leftExpAst->print(0);
             cout<<" ";
@@ -529,8 +530,30 @@ class AssStmt : public StmtAst{
     public:
         AssStmt(ExpAst *left, ExpAst *right): leftExpAst(left), rightExpAst(right){}
         
+        bool validate(){
+            string ltype = leftExpAst->getType();
+            string rtype = rightExpAst->getType();
+            if(ltype=="INT" && rtype=="INT") return true;
+            else if(ltype=="FLOAT" && rtype=="FLOAT") return true;
+            else if(ltype=="INT" && rtype=="FLOAT"){
+                //type cast right expast to int
+                Cast *cast = new Cast("INT",rightExpAst);
+                rightExpAst = cast;
+            }else if(ltype=="FLOAT" && rtype=="INT"){
+                //type cast right expast
+                Cast *cast = new Cast("FLOAT",rightExpAst);
+                rightExpAst = cast;
+            }else{
+                cerr<<"Invalid assignment ("+leftExpAst->getExpStr()+" of type "+ltype+") "+"="+
+                                            " ("+rightExpAst->getExpStr()+" of type "+rtype+")"<<endl;
+                return false;
+            }
+                
+            return true;
+        }
+
         void print (int level){
-            cout<<string(level, ' ')<<"(Ass ";
+            cout<<string(level, ' ')<<"(Ass_"+leftExpAst->getType()+" ";
             leftExpAst->print(0);
             cout<<" ";
             rightExpAst->print(0);

@@ -201,6 +201,7 @@ assignment_statement
   {
     if(!($1)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     $$ = new AssStmt($1,$3);
+    if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }	
 	;
