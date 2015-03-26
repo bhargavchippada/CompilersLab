@@ -4,7 +4,8 @@ STRING_LITERAL_ \"(\\.|[^"])*\"
 
 IDENTIFIER_	[a-zA-Z_\$][a-zA-Z0-9_\$]*
 
-WHITESPACES_	[ \t\n]+
+WHITESPACES_	[ \t]+
+NEWLINE_		\n
 COMMENT_	((\/\*(.|\n)*?(\*\/))|(\/\/(.)*))
 
 VOID_			void
@@ -27,28 +28,29 @@ DEC_OP_			\-\-
 
 
 %%
-{WHITESPACES_}		//return WHITESPACES;
+{WHITESPACES_}		//return Parser::WHITESPACES;
 {COMMENT_}			//return Parser::COMMENT;
-\,                            return ',';
-\[                            return '[';
-\]                            return ']';
-\{                            return '{';
-\}                            return '}';
-\(                            return '(';
-\)                            return ')';
-\;                            return ';';
+{NEWLINE_}			{Parser::lineno = Parser::lineno + 1;}
+\,                	return ',';
+\[                  return '[';
+\]                  return ']';
+\{                  return '{';
+\}                  return '}';
+\(                  return '(';
+\)                  return ')';
+\;                  return ';';
 
-\+                            return '+';
-\-                            return '-';
-\*                            return '*';
-\/                            return '/';
-\%                            return '%';
+\+                  return '+';
+\-                  return '-';
+\*                  return '*';
+\/                  return '/';
+\%                  return '%';
 
-\<							  return '<';
-\>							  return '>';
-\!							  return '!';
-\=							  return '=';
-\&							  return '&';
+\<					return '<';
+\>					return '>';
+\!					return '!';
+\=					return '=';
+\&					return '&';
 
 {VOID_}				return Parser::VOID;
 {INT_}				return Parser::INT;

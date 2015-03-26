@@ -185,7 +185,7 @@ assignment_statement
   }							
 	|  l_expression '=' expression ';'
   {
-    if(!($1)->validate()) ABORT();
+    if(!($1)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     $$ = new AssStmt($1,$3);
     //($$)->print(0);std::cout<<std::endl;
   }	
@@ -325,7 +325,7 @@ postfix_expression
   }
   | l_expression INC_OP
   {
-    if(!(($1)->validate())) ABORT();
+    if(!($1)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     $$ = new op1("PP",$1);
     //($$)->print(0);std::cout<<std::endl;
   }
@@ -334,12 +334,12 @@ postfix_expression
 primary_expression
 	: l_expression
   {
-    if(!(($1)->validate())) ABORT();
+    if(!($1)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     $$ = $1;
   }
   | l_expression '=' expression // added this production
   {
-    if(!(($1)->validate())) ABORT();
+    if(!($1)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     $$ = new op2($1,"ASSIGN",$3);
     //($$)->print(0);std::cout<<std::endl;
     
