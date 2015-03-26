@@ -340,19 +340,20 @@ class op2 : public ExpAst{
                 //type cast right expast to int
                 Cast *cast = new Cast("INT",rightExpAst);
                 rightExpAst = cast;
-                type = "VOID";
+                type = "INT";
             }else if(ltype=="FLOAT" && rtype=="INT"){
                 //type cast right expast
                 Cast *cast = new Cast("FLOAT",rightExpAst);
                 rightExpAst = cast;
-                if(op!="ASSIGN") type = "FLOAT";
-                else type = "VOID";
+                type = "FLOAT";
             }else{
                 type="NULL";
                 cerr<<"Invalid operation ("+leftExpAst->getExpStr()+" of type "+ltype+") "+op+
                                             " ("+rightExpAst->getExpStr()+" of type "+rtype+")"<<endl;
                 return false;
             }
+                
+            if(op=="ASSIGN") type = "VOID";
             return true;
         }
 
@@ -361,7 +362,9 @@ class op2 : public ExpAst{
         }
 
         void print (int level){
-            cout<<string(level, ' ')<<"("<<op<<"_"<<type<<" ";
+            string ptype="";
+            if(op!="ASSIGN") ptype= "_"+type;
+            cout<<string(level, ' ')<<"("<<op<<ptype<<" ";
             leftExpAst->print(0);
             cout<<" ";
             rightExpAst->print(0);
