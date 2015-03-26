@@ -45,7 +45,7 @@ function_definition
     localtable = new symbTable("temp", gobltable);
     isParam = true;
     int exitcode = gobltable->addEntity(localtableTemp->tablename ,"fun", $1,false,   localtableTemp);
-    if (exitcode < 0) ABORT();
+    if (exitcode < 0) {cerr<<"line number: "<<lineno<<endl; ABORT();}
   }
 	;
 
@@ -100,12 +100,12 @@ declarator
   {
     $$ = $1;
     int exitcode = localtable->addEntity($1, "var", varType, isParam, NULL);
-    if (exitcode < 0) ABORT();
+    if (exitcode < 0) {cerr<<"line number: "<<lineno<<endl; ABORT();}
   }
 	| declarator '[' constant_expression ']' 
   {
     int exitcode = localtable->addArray($1, $3, isParam);
-    if (exitcode < 0) ABORT();
+    if (exitcode < 0) {cerr<<"line number: "<<lineno<<endl; ABORT();}
   }
   ;
 

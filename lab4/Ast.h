@@ -327,10 +327,14 @@ class op2 : public ExpAst{
         }
 
         bool validate(){
-            /*
-            if(left->getType()=="INT" && right->getType()=="INT") type="INT";
+            string ltype = leftExpAst->getType();
+            string rtype = rightExpAst->getType();
+            if(ltype=="INT" && rtype=="INT") type="INT";
+            else if(ltype=="FLOAT" && rtype=="FLOAT") type="FLOAT";
+            else if(ltype=="INT" && rtype=="FLOAT"){
+                //type cast left
+            }
             return true;
-            */
         }
 
         string getExpStr(){

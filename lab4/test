@@ -9,12 +9,11 @@ void swap(int x, int y){
 
 int main()
 {
-	int x, y;
+	void x, y;
 	float p[4][5];
 
 	p[4][1] = swap(2,3);
-	y = "hello";
-	y = y++;
+	y = 2+1.5;
 	//swap = 30;
 	// int z[200];
 

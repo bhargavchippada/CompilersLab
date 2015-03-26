@@ -118,6 +118,13 @@ struct symbTable{
 		}
 
 		int s = giveSize(ty);
+
+		if (t == "var" && s==0){
+			//means variable of type void which is not valid
+			cerr << "Variable declaration of type void is not valid: "  << n  << endl;
+			return -1;
+		}
+		
 		if (t == "fun") s = 0;
 		if(isParam) {
 			paramoffset-=s;
