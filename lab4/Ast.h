@@ -229,7 +229,7 @@ class ArrayRef : public ExpAst {
 
     void addExpAst(ExpAst *expast){
         if(expast->getType()!="INT"){
-            cerr<<"Invalid array parameter: "+expast->getExpStr()<<endl;
+            cerr<<"Invalid array index, not of type INT: "+expast->getExpStr()<<endl;
             exitcode=true;
         }
     	(*expAstList).push_back(expast);
@@ -337,6 +337,11 @@ class op2 : public ExpAst{
             if(ltype=="INT" && rtype=="INT") type="INT";
             else if(ltype=="FLOAT" && rtype=="FLOAT") type="FLOAT";
             else if(ltype=="INT" && rtype=="FLOAT" && op!="ASSIGN"){
+                if(op=="AND") {
+                    // no casting required
+                    type="INT";
+                    return true;
+                }
                 //type cast left expast to float
                 Cast *cast = new Cast("FLOAT",leftExpAst);
                 leftExpAst = cast;
@@ -347,6 +352,12 @@ class op2 : public ExpAst{
                 rightExpAst = cast;
                 type = "INT";
             }else if(ltype=="FLOAT" && rtype=="INT"){
+                if(op=="AND") {
+                    // no casting required
+                    type="INT";
+                    return true;
+                }
+                
                 //type cast right expast
                 Cast *cast = new Cast("FLOAT",rightExpAst);
                 rightExpAst = cast;
