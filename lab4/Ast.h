@@ -331,8 +331,27 @@ class op2 : public ExpAst{
             string rtype = rightExpAst->getType();
             if(ltype=="INT" && rtype=="INT") type="INT";
             else if(ltype=="FLOAT" && rtype=="FLOAT") type="FLOAT";
-            else if(ltype=="INT" && rtype=="FLOAT"){
-                //type cast left
+            else if(ltype=="INT" && rtype=="FLOAT" && op!="ASSIGN"){
+                //type cast left expast to float
+                Cast *cast = new Cast("FLOAT",leftExpAst);
+                leftExpAst = cast;
+                type = "FLOAT";
+            }else if(ltype=="INT" && rtype=="FLOAT" && op=="ASSIGN"){
+                //type cast right expast to int
+                Cast *cast = new Cast("INT",rightExpAst);
+                rightExpAst = cast;
+                type = "VOID";
+            }else if(ltype=="FLOAT" && rtype=="INT"){
+                //type cast right expast
+                Cast *cast = new Cast("FLOAT",rightExpAst);
+                rightExpAst = cast;
+                if(op!="ASSIGN") type = "FLOAT";
+                else type = "VOID";
+            }else{
+                type="NULL";
+                cerr<<"Invalid operation ("+leftExpAst->getExpStr()+" of type "+ltype+") "+op+
+                                            " ("+rightExpAst->getExpStr()+" of type "+rtype+")"<<endl;
+                return false;
             }
             return true;
         }

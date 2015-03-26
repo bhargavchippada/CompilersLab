@@ -199,6 +199,7 @@ expression
   | expression OR_OP logical_and_expression
   {
     $$ = new op2($1,"OR",$3);
+    if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
   ;
@@ -211,6 +212,7 @@ logical_and_expression
   | logical_and_expression AND_OP equality_expression
   {
     $$ = new op2($1,"AND",$3);
+    if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
   ;
@@ -223,11 +225,13 @@ equality_expression
   | equality_expression EQ_OP relational_expression
   {
     $$ = new op2($1,"EQ_OP",$3);
+    if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }	
 	| equality_expression NE_OP relational_expression
   {
     $$ = new op2($1,"NE_OP",$3);
+    if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
 	;
@@ -240,21 +244,25 @@ relational_expression
   | relational_expression '<' additive_expression
   {
     $$ = new op2($1,"LT",$3);
+    if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
 	| relational_expression '>' additive_expression
   {
     $$ = new op2($1,"GT",$3);
+    if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
 	| relational_expression LE_OP additive_expression
   {
     $$ = new op2($1,"LE_OP",$3);
+    if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
   | relational_expression GE_OP additive_expression
   {
     $$ = new op2($1,"GE_OP",$3);
+    if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
 	;
@@ -267,11 +275,13 @@ additive_expression
 	| additive_expression '+' multiplicative_expression
   {
     $$ = new op2($1,"PLUS",$3);
+    if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
 	| additive_expression '-' multiplicative_expression
   {
     $$ = new op2($1,"MINUS",$3);
+    if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
 	;
@@ -284,11 +294,13 @@ multiplicative_expression
 	| multiplicative_expression '*' unary_expression
   {
     $$ = new op2($1,"MULT",$3);
+    if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
 	| multiplicative_expression '/' unary_expression
   {
     $$ = new op2($1,"DIV",$3);
+    if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
 	;
@@ -343,6 +355,7 @@ primary_expression
   {
     if(!($1)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     $$ = new op2($1,"ASSIGN",$3);
+    if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
     
   }
