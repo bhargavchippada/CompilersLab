@@ -80,6 +80,41 @@ struct symbTable{
 		return NULL;
 	}
 
+	vector<string> split_space(string s){
+		vector<string> ans;
+		int index = 0;
+		s = s + " ";
+		while(s[index] == ' ') index++;
+
+		string temp = "";
+		while(1){
+			if(s[index] == ' ') {
+				ans.push_back(temp);
+				temp = "";
+				while(s[index] == ' ') index++;
+			}
+			if (index == s.size()) break;
+			temp = temp + s[index++];
+		}
+		return ans;
+	}
+
+	vector<entity*> findFunctionInScope(string varName, string varType){
+		vector<entity*> result;
+		for(int i=0; i<symtable.size();i++){
+			if(symtable[i]->varType==varType && split_space(symtable[i]->name)[0] == varName) {
+				result.push_back(symtable[i]);
+			}
+		}
+		if(parentPtr!=NULL) {
+			vector<entity*> parentresult = parentPtr->findFunctionInScope(varName,varType);
+			for(int i=0; i<parentresult.size(); i++){
+				result.push_back(parentresult[i]);
+			}
+		}
+		return result;
+	}
+
 	int addArray(string arrayName, int dimension, bool isParam){
 		if(dimension<=0){
 			cerr<<"Error! Invalid indice "<<dimension<<" for array "<<arrayName<<endl;

@@ -8,7 +8,7 @@
 
 %polymorphic STRING : std::string;  EXPAST : ExpAst*; STMTAST : StmtAst*; STMTLIST : list<StmtAst*>*; EXPLIST : list<ExpAst*>*; INTCONST : INTCONST*; FLOATCONST : FLOATCONST*; STRINGCONST : STRINGCONST*; IDENTIFIERAST : IDENTIFIERAST*; ArrayRef : ArrayRef*; op2 : op2*; op1 : op1*; FUNCALL : FUNCALL*; BlockStmt : BlockStmt*; ReturnStmt : ReturnStmt*; AssStmt : AssStmt*; IfStmt : IfStmt*; emptyStmt : emptyStmt*; WhileStmt : WhileStmt*; ForStmt : ForStmt*; INT : int; FLOAT : float;
 
-%type<STRING> unary_operator IDENTIFIER STRING_LITERAL type_specifier declarator
+%type<STRING> unary_operator IDENTIFIER STRING_LITERAL type_specifier declarator 
 %type<INT> INT_CONSTANT constant_expression
 %type<FLOAT> FLOAT_CONSTANT
 
@@ -26,10 +26,12 @@
 code_unit
   : translation_unit
   {
-    entity *mainfunc = gobltable->findInScope("main","fun");
-    if(mainfunc==NULL){
+    vector<entity*> mainfuncvec = gobltable->findFunctionInScope("main","fun");
+    if(mainfuncvec.size()==0){
       cerr<<"Error! main function is not present!"<<endl;
       ABORT();
+    }else if(mainfuncvec.size() > 1){
+      cerr<<"Error! more than one main function cannot be defined!"<<endl;
     }
     cerr<<"Parsing is successful"<<endl;
   }
@@ -56,7 +58,7 @@ function_definition
     localtable = new symbTable("temp", gobltable);
     isParam = true;
     funType = true;
-    int exitcode = gobltable->addEntity(localtableTemp->tablename ,"fun", $1,false,   localtableTemp);
+    int exitcode = gobltable->addEntity(localtableTemp->tablename+" "+to_string(localtableTemp->numofparams),"fun", $1,false,   localtableTemp);
     if (exitcode < 0) {cerr<<"line number: "<<lineno<<endl; ABORT();}
   }
 	;
