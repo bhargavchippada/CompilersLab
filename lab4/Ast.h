@@ -449,47 +449,38 @@ class FUNCALL : public ExpAst{
         bool validate(){
             string varName = funcName->getId();
 
-            // Modified this
-            vector<entity*> ent = localtable->findFunctionInScope(varName,"fun"); 
-            // made a new function findFunctionInScope
+            entity* ent = localtable->findFunctionInScope(varName,expSequence->size()); 
             
-            if(ent.size() == 0){
-                cerr<<"Error! Function is used without declaration: "+varName<<endl;
+            if(ent == NULL){
+                cerr<<"Error! No matching function with the given no of parameters: "+varName<<endl;
                 return false;
             }else{
-                for (int i = 0; i < ent.size(); i++){
-                    symbTable *func = ent[i]->funcPtr;
-                    if(func->numofparams == expSequence->size()){
-                        type = func->returntype;
+                symbTable *func = ent->funcPtr;
+                type = func->returntype;
 
-                        list<ExpAst*>::iterator it = expSequence->begin();
-                        for(int i=0; i<func->numofparams && it != expSequence->end(); i++){
-                            string ltype = func->symtable[i]->type;
-                            string rtype = (*it)->getType();
-                            if(ltype=="INT" && rtype=="INT");
-                            else if(ltype=="FLOAT" && rtype=="FLOAT");
-                            else if(ltype=="INT" && rtype=="FLOAT"){
-                                //type cast right expast to int
-                                Cast *cast = new Cast("INT",(*it));
-                                (*it) = cast;
-                            }else if(ltype=="FLOAT" && rtype=="INT"){
-                                //type cast right expast
-                                Cast *cast = new Cast("FLOAT",*it);
-                                *it = cast;
-                            }else{
-                                cerr<<"Error! Type mismatch for parameter "<<(i+1)<<" of the function "+funcName->getExpStr()<<endl;
-                                return false;
-                            }
-
-                            it++;
-                        }
-                        
-                        return true;
+                list<ExpAst*>::iterator it = expSequence->begin();
+                for(int i=0; i<func->numofparams && it != expSequence->end(); i++){
+                    string ltype = func->symtable[i]->type;
+                    string rtype = (*it)->getType();
+                    if(ltype=="INT" && rtype=="INT");
+                    else if(ltype=="FLOAT" && rtype=="FLOAT");
+                    else if(ltype=="INT" && rtype=="FLOAT"){
+                        //type cast right expast to int
+                        Cast *cast = new Cast("INT",(*it));
+                        (*it) = cast;
+                    }else if(ltype=="FLOAT" && rtype=="INT"){
+                        //type cast right expast
+                        Cast *cast = new Cast("FLOAT",*it);
+                        *it = cast;
+                    }else{
+                        cerr<<"Error! Type mismatch for parameter "<<(i+1)<<" of the function "+funcName->getExpStr()<<endl;
+                        return false;
                     }
-                }
 
-                cerr<<"Error! Wrong number of parameters: "+varName<<endl;
-                return false;
+                    it++;
+                }
+                
+                return true;
             }
         }
 

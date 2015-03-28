@@ -2,7 +2,7 @@ int remake(int z, float u){
 	return 3*4;
 }
 
-int remake(int z, int u){
+int remake(int z, int u, float y){
 	return 3*4;
 }
 

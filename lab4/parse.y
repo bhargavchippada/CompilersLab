@@ -26,7 +26,7 @@
 code_unit
   : translation_unit
   {
-    vector<entity*> mainfuncvec = gobltable->findFunctionInScope("main","fun");
+    vector<entity*> mainfuncvec = gobltable->findFunctionInScope("main");
     if(mainfuncvec.size()==0){
       cerr<<"Error! main function is not present!"<<endl;
       ABORT();
@@ -58,7 +58,7 @@ function_definition
     localtable = new symbTable("temp", gobltable);
     isParam = true;
     funType = true;
-    int exitcode = gobltable->addEntity(localtableTemp->tablename+" "+to_string(localtableTemp->numofparams),"fun", $1,false,   localtableTemp);
+    int exitcode = gobltable->addEntity(localtableTemp->tablename,"fun", $1,false,   localtableTemp);
     if (exitcode < 0) {cerr<<"line number: "<<lineno<<endl; ABORT();}
   }
 	;
