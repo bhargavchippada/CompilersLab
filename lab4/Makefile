@@ -24,4 +24,4 @@ clean:
 	rm -f astjunk
 
 ast:
-	./a.out < test > astjunk;
+	./a.out < test.cpp > astjunk;

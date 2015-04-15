@@ -541,9 +541,21 @@ class ReturnStmt : public StmtAst{
                 return false;
             }
 
-            if(returnExp->getType()==localtable->returntype){
+            string ltype = returnExp->getType();
+            string rtype = localtable->returntype;
+            if(ltype == "INT" and rtype == "INT") return true;
+            else if(ltype == "FLOAT" and rtype == "FLOAT") return true;
+            else if(ltype == "FLOAT" and rtype == "INT") {
+                Cast *cast = new Cast("INT",returnExp);
+                returnExp = cast;
                 return true;
-            }else{
+            }
+            else if(rtype == "FLOAT" and ltype == "INT") {
+                Cast *cast = new Cast("FLOAT",returnExp);
+                returnExp = cast;
+                return true;
+            }
+            else{
                 cerr<<"Error! Incorrect return type: "+returnExp->getType()+" of "+returnExp->getExpStr()+
                 " when "+localtable->returntype+" is expected"<<endl;
                 return false;
