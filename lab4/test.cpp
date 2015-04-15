@@ -16,11 +16,11 @@ void swap(int p, int q){
 
 int main()
 {
-	int x, y;
+	int x, y, remake;
 	float p[4][5];
-	// p[4][3] = swap(1,2);
+	p[4][3] = remake(1,2);
 	y = x + p[1][2];
-	p[3][3] = remake(3,4);
+	// p[3][3] = remake(3,4);
 	// swap(p[1][2], p[3][4]);
 	//swap = 30;
 	// int z[200];

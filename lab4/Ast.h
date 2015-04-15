@@ -450,11 +450,17 @@ class FUNCALL : public ExpAst{
             string varName = funcName->getId();
 
             entity* ent = localtable->findFunctionInScope(varName,expSequence->size()); 
+            entity *entVar = localtable->findInScope(varName,"var");
             
-            if(ent == NULL){
+            if (entVar != NULL){
+                cerr<<"Error! Cannot be used as a function: "+ varName<<endl;
+                return false;
+            }
+            else if(ent == NULL){
                 cerr<<"Error! No matching function with the given no of parameters: "+varName<<endl;
                 return false;
-            }else{
+            }
+            else{
                 symbTable *func = ent->funcPtr;
                 type = func->returntype;
 
