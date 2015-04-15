@@ -228,12 +228,14 @@ class ArrayRef : public ExpAst {
         expAstList = new list<ExpAst*>();
     }
 
-    void addExpAst(ExpAst *expast){
+    bool addExpAst(ExpAst *expast){
         if(expast->getType()!="INT"){
             cerr<<"Error! Invalid array index, not of type INT: "+expast->getExpStr()<<endl;
             exitcode=true;
+            return false;
         }
     	(*expAstList).push_back(expast);
+        return true;
     }
 
     string getType(){

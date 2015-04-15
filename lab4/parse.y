@@ -417,7 +417,8 @@ l_expression
 
   | l_expression '[' expression ']'
   {
-    ((ArrayRef*)$1)->addExpAst($3);
+    if (!((ArrayRef*)$1)->addExpAst($3))
+      {cerr<<"line number: "<<lineno<<endl; ABORT();}
     $$ = $1;
     //($$)->print(0);std::cout<<std::endl;
   }
