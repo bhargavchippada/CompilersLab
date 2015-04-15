@@ -71,7 +71,7 @@ function_definition
     blockstmt->genCode();
 
     if (localtableTemp->tablename != "main"){
-      outputFile <<  "e:  loadi(ind(ebp), ebp); // restoring dynamic link" << endl;
+      outputFile <<  "\ne:  loadi(ind(ebp), ebp); // restoring dynamic link" << endl;
       outputFile <<  "\tpopi(1); //pop stack" << endl;
     }
     outputFile << "\treturn; //return" << endl;

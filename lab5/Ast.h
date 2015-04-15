@@ -11,9 +11,6 @@
 #include <fstream>
 using namespace std;
 
-#define I 4
-#define F 4
-
 namespace // anonymous
 {
     bool isParam = true;
@@ -31,6 +28,10 @@ class ExpAst : public abstract_astnode {
     string type="default";
 
 	public:
+
+    virtual bool isConstant(){
+        return false;
+    }
 
     virtual void print (int level){
         cout<<string(level, ' ')<<"This is an abstract ExpAst class" << endl;
@@ -79,6 +80,10 @@ class INTCONST : public ExpAst {
     	Num = n;
     }
 
+    bool isConstant(){
+        return true;
+    }
+
     void setValue(int n){
     	Num = n;
     }
@@ -112,6 +117,10 @@ class FLOATCONST : public ExpAst {
   public:
     FLOATCONST(float f){
         Num = f;
+    }
+
+    bool isConstant(){
+        return true;
     }
 
     void setValue(float f){
@@ -226,6 +235,9 @@ class IDENTIFIERAST : public ExpAst {
     void print(int level){
         cout<<string(level, ' ')<<"(Id \""<<identifier<<"\")";
     }
+    void genCode(){
+        // cerr << "FSg\n";
+    }
 };
 
 class ArrayRef : public ExpAst {
@@ -330,6 +342,22 @@ class Cast : public ExpAst{
             cout<<string(level, ' ')<<"(TO_"<<type<<" ";
             singleExpAst->print(0);
             cout<<")";
+        }
+
+        void genCode(){
+            if (type == "INT" and singleExpAst->getType() == "FLOAT"){
+                if (singleExpAst->isConstant()){
+                    outputFile << "\tmove(" << ((FLOATCONST*) singleExpAst)->evaluate()  << ", eax);\n";
+                }
+                outputFile << "\tfloatToint(eax);\n";
+            }
+            if (type == "FLOAT" and singleExpAst->getType() == "INT"){
+                if (singleExpAst->isConstant()){
+                    outputFile << "\tmove(" << ((INTCONST*) singleExpAst)->evaluate()  << ", eax);" << endl;
+                }
+                outputFile << "\tintTofloat(eax);\n";
+            }
+            singleExpAst->genCode();
         }
 };
 
@@ -462,6 +490,8 @@ class FUNCALL : public ExpAst{
         }
 
         bool validate(){
+            // cerr << "Here\n\n";
+
             string varName = funcName->getId();
 
             entity* ent = localtable->findFunctionInScope(varName); 
@@ -534,6 +564,81 @@ class FUNCALL : public ExpAst{
 			}
             cout<<"})";
 		}
+
+        void genCode(){
+            // cerr << "Here\n\n";
+            // Push the return value
+            outputFile << "\n\t// parameter loading :: " << funcName->getId() << endl;
+            if (type == "INT"){
+                outputFile << "\tpushi(0); //To make space in stack for return val" << endl;
+            } 
+            else if (type == "FLOAT"){
+                outputFile << "\tpushf(0.0); //To make space in stack for return val" << endl;
+            }
+
+            int floatParams = 0, intParams = 0;
+
+            string varName = funcName->getId();
+            entity* ent = localtable->findFunctionInScope(varName); 
+            symbTable *func = ent->funcPtr;
+
+            list<ExpAst*>::iterator it = expSequence->begin();
+            int i = 0;
+            while(it != expSequence->end()){
+                string ltype = func->symtable[i]->type;
+                string rtype = (*it)->getType();
+
+                if ((*it)->isConstant() and (ltype == rtype)){
+                    // outputFile << "\t" << (*it)->getExpStr() << endl;
+                
+                    if (ltype == "INT"){
+                        intParams++;
+                        outputFile << "\tpushi(" << ((INTCONST*) (*it))->evaluate()  << "); // argument to fact" << endl;
+                    }
+                    if (ltype == "FLOAT"){
+                        floatParams++;
+                        outputFile << "\tpushf(" << ((FLOATCONST*) (*it))->evaluate()  << "); // argument to fact" << endl;
+                    }
+                }
+                else{
+                    (*it)->genCode();
+                    // assuming the value to be in eax
+
+                    if (rtype == ltype){
+                        if (ltype == "INT"){
+                            intParams++;
+                            outputFile << "\tpushi(eax); // argument to fact" << endl;
+                        }
+                        if (ltype == "FLOAT"){
+                            floatParams++;
+                            outputFile << "\tpushf(eax); // argument to fact" << endl;
+                        }
+                    }
+                }
+
+                it++;
+                i++;
+            }
+
+            // Function call ::
+            outputFile << "\t" << varName << "();\n";
+
+            if (intParams > 0){
+                outputFile << "\tpopi(" << intParams << ");\n";
+            }
+            
+            if (floatParams > 0){
+                outputFile << "\tpopf(" << floatParams << ");\n";
+            }
+
+            // Pop retrun value
+            if (type == "INT"){
+                outputFile << "\tpopi(1); // Clean up return value\n" << endl;
+            } 
+            else if (type == "FLOAT"){
+                outputFile << "\tpopf(1); // pop the return value\n" << endl;
+            }
+        }
 };
 
 class BlockStmt : public StmtAst{
@@ -648,7 +753,10 @@ class AssStmt : public StmtAst{
         }
 
         void genCode(){
-            
+            // cerr << "In ass stmt\n";
+            rightExpAst->genCode();
+            // cerr << "In ass stmt\n";
+            leftExpAst->genCode();
         }
 };
 
@@ -686,7 +794,7 @@ class IfStmt : public StmtAst{
             outputFile << "l" << currentLabel << ":\n";
             elseStmtAst->genCode();
 
-            outputFile << "e" << currentLabel << ":\n";
+            outputFile << "\ne" << currentLabel << ":\n";
 
         }
 };
@@ -725,7 +833,7 @@ class WhileStmt : public StmtAst{
             int currentLabel = globalLabel;
             globalLabel++;
 
-            outputFile << "l" << currentLabel << ":\n";
+            outputFile << "\nl" << currentLabel << ":\n";
             whileExpAst->genCode();
 
             outputFile << "\tcmpi(0, eax);" << endl;
@@ -736,7 +844,7 @@ class WhileStmt : public StmtAst{
             outputFile << "\tj(l" << currentLabel << ");\n";
 
 
-            outputFile << "e" << currentLabel << ":\n";
+            outputFile << "\ne" << currentLabel << ":\n";
 
         }
 
@@ -771,7 +879,7 @@ class ForStmt : public StmtAst{
 
             for1ExpAst->genCode();
 
-            outputFile << "l" << currentLabel << ":\n";
+            outputFile << "\nl" << currentLabel << ":\n";
             for2ExpAst->genCode();
 
             outputFile << "\tcmpi(0, eax);" << endl;
@@ -781,7 +889,7 @@ class ForStmt : public StmtAst{
             for3ExpAst->genCode();
 
             outputFile << "\tj(l" << currentLabel << ");\n";
-            outputFile << "e" << currentLabel << ":\n";
+            outputFile << "\ne" << currentLabel << ":\n";
 
         }
 };

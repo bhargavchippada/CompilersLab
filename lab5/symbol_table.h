@@ -9,6 +9,10 @@
 
 using namespace std;
 
+
+#define I 4
+#define F 4
+
 struct symbTable;
 
 struct entity{
@@ -59,8 +63,8 @@ struct symbTable{
 	}
 
 	int giveSize(string s){
-		if (s == "INT") return 4;
-		if (s == "FLOAT") return 4;
+		if (s == "INT") return I;
+		if (s == "FLOAT") return F;
 		if (s == "VOID") return 0;
 		return -1;
 	}

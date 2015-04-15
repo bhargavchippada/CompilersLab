@@ -2,8 +2,8 @@
 
 int remake(int z, float u){
 	float x;
-	u = z;
-	return x;
+	// u = z;
+	return 0;
 }
 
 // int remake(int z, int u, float y){
@@ -19,10 +19,10 @@ void swap(int p, int q){
 int main()
 {
 	int x, y;
-	float p[4][5];
-	p[2][3] = remake(1,2);
+	int p[4][5];
+	p[2][3] = remake(x,2.0);
 	// printf("%f\n", p[2][3]);
-	y = x + p[1][2];
+	// y = x + p[1][2];
 	p[3][3] = remake(3,4);
 	// swap(p[1][2], p[3][4]);
 	//swap = 30;
@@ -30,5 +30,5 @@ int main()
 	while(x < 4) x = x + 1;
 
 	for (x=0.5; x <10; x++);
-	if (y >1) {x=x-1; y=y+1;} else ;
+	if (y >1) {x=x-1; y=y+1; if (1) ; else ;} else ;
 }
