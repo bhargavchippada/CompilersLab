@@ -11,11 +11,15 @@
 #include <fstream>
 using namespace std;
 
+#define I 4
+#define F 4
+
 namespace // anonymous
 {
     bool isParam = true;
     bool funType = true;
     string varType;
+    int globalLabel = 1;
     symbTable *gobltable = new symbTable("gobl", NULL);
     symbTable *localtable = new symbTable("temp", gobltable);
     bool exitcode = false;
@@ -43,6 +47,10 @@ class ExpAst : public abstract_astnode {
     virtual bool validate(){
         cerr<<"Error! default validation"<<endl;
     }
+
+    virtual void genCode(){
+
+    }
 };
 
 class StmtAst : public abstract_astnode {
@@ -54,6 +62,10 @@ class StmtAst : public abstract_astnode {
 
     virtual bool validate(){
         cerr<<"Error! stmtast default validation"<<endl;
+    }
+
+    virtual void genCode(){
+
     }
 };
 
@@ -541,6 +553,13 @@ class BlockStmt : public StmtAst{
             }
             cout<<string(level+7, ' ')<<"])";
         }
+
+        void genCode(){
+            for (list<StmtAst*>::iterator it = stmtSequence->begin(); it != stmtSequence->end();){
+                (*it)->genCode();
+                it++;
+            }
+        }
 };
 
 class ReturnStmt : public StmtAst{
@@ -583,6 +602,12 @@ class ReturnStmt : public StmtAst{
             returnExp->print(0);
             cout<<")";
         }
+
+        void genCode(){
+            outputFile <<  "\tstoref(ebx, ind(ebp,  3*F + I << )); // Save the return value in stack" << endl;
+            // outputFile <<  "\tstoref(ebx, ind(ebp," << 3*F + I << ")); // Save the return value in stack" << endl;
+            outputFile << "\tj(e); // Unconditional jump" << endl;
+        }
 };
 
 class AssStmt : public StmtAst{
@@ -621,6 +646,10 @@ class AssStmt : public StmtAst{
             rightExpAst->print(0);
             cout<<")";
         }
+
+        void genCode(){
+            
+        }
 };
 
 class IfStmt : public StmtAst{
@@ -641,6 +670,25 @@ class IfStmt : public StmtAst{
             elseStmtAst->print(level+4);
             cout<<")";
         }
+
+        void genCode(){
+            int currentLabel = globalLabel;
+            globalLabel++;
+
+            ifExpAst->genCode();
+            outputFile << "\tcmpi(0, eax);" << endl;
+            outputFile << "\tjne(l" << currentLabel << "); // Jump if not equal" << endl;
+            
+            thenStmtAst->genCode();
+            outputFile << "\tj(e" << currentLabel << ");\n";
+
+
+            outputFile << "l" << currentLabel << ":\n";
+            elseStmtAst->genCode();
+
+            outputFile << "e" << currentLabel << ":\n";
+
+        }
 };
 
 class emptyStmt : public StmtAst{
@@ -649,6 +697,10 @@ class emptyStmt : public StmtAst{
     public:
         void print (int level){
             cout<<string(level, ' ')<<"(Empty)";
+        }
+
+        void genCode(){
+            
         }
 };
 
@@ -667,6 +719,27 @@ class WhileStmt : public StmtAst{
             thenStmtAst->print(level+7);
             cout<<")";
         }
+
+        void genCode(){
+
+            int currentLabel = globalLabel;
+            globalLabel++;
+
+            outputFile << "l" << currentLabel << ":\n";
+            whileExpAst->genCode();
+
+            outputFile << "\tcmpi(0, eax);" << endl;
+            outputFile << "\tjne(e" << currentLabel << "); // Jump if not equal" << endl;
+            
+            thenStmtAst->genCode();
+            
+            outputFile << "\tj(l" << currentLabel << ");\n";
+
+
+            outputFile << "e" << currentLabel << ":\n";
+
+        }
+
 };
 
 class ForStmt : public StmtAst{
@@ -691,6 +764,26 @@ class ForStmt : public StmtAst{
             cout<<")";
         }
         
+        void genCode(){
+
+            int currentLabel = globalLabel;
+            globalLabel++;
+
+            for1ExpAst->genCode();
+
+            outputFile << "l" << currentLabel << ":\n";
+            for2ExpAst->genCode();
+
+            outputFile << "\tcmpi(0, eax);" << endl;
+            outputFile << "\tjne(e" << currentLabel << "); // Jump if not equal" << endl;
+            
+            thenStmtAst->genCode();
+            for3ExpAst->genCode();
+
+            outputFile << "\tj(l" << currentLabel << ");\n";
+            outputFile << "e" << currentLabel << ":\n";
+
+        }
 };
 
 #endif

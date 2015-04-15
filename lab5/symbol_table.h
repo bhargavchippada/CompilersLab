@@ -60,7 +60,7 @@ struct symbTable{
 
 	int giveSize(string s){
 		if (s == "INT") return 4;
-		if (s == "FLOAT") return 8;
+		if (s == "FLOAT") return 4;
 		if (s == "VOID") return 0;
 		return -1;
 	}

@@ -38,6 +38,7 @@ void main()
 //int fact(int n)
 void fact()
 {
+	// cout << "value of i is : " << P << endl;
 	pushi(ebp); // Setting dynamic link
 	move(esp,ebp); // Setting dynamic link
 	loadi(ind(ebp, I), eax); // load n to eax

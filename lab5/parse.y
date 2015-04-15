@@ -53,9 +53,7 @@ function_definition
     localtable->printTable();
     symbTable *localtableTemp = new symbTable("temp", gobltable);
     *localtableTemp = *localtable;
-    localtable = new symbTable("temp", gobltable);
-    isParam = true;
-    funType = true;
+
     int exitcode = gobltable->addEntity(localtableTemp->tablename,"fun", $1,false,   localtableTemp);
     if (exitcode < 0) {cerr<<"line number: "<<lineno<<endl; ABORT();}
 
@@ -64,9 +62,25 @@ function_definition
     blockstmt->print(0);std::cout<<std::endl<<std::endl;
     // genCode();
     outputFile <<  "void " + localtableTemp->tablename + "()" + "\n{\n";
-    // blockstmt->genCode();
+    
+    if (localtableTemp->tablename != "main"){
+        outputFile << "\tpushi(ebp); // Setting dynamic link" << endl;
+        outputFile << "\tmove(esp,ebp); // Setting dynamic link" << endl;
+    }
+    
+    blockstmt->genCode();
+
+    if (localtableTemp->tablename != "main"){
+      outputFile <<  "e:  loadi(ind(ebp), ebp); // restoring dynamic link" << endl;
+      outputFile <<  "\tpopi(1); //pop stack" << endl;
+    }
+    outputFile << "\treturn; //return" << endl;
+
     outputFile << "}\n\n";
 
+    localtable = new symbTable("temp", gobltable);
+    isParam = true;
+    funType = true;
   }
 	;
 

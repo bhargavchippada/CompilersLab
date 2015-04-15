@@ -27,6 +27,7 @@ int main()
 	// swap(p[1][2], p[3][4]);
 	//swap = 30;
 	// int z[200];
+	while(x < 4) x = x + 1;
 
 	for (x=0.5; x <10; x++);
 	if (y >1) {x=x-1; y=y+1;} else ;
