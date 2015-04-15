@@ -80,27 +80,27 @@ struct symbTable{
 		return NULL;
 	}
 
-	vector<entity*> findFunctionInScope(string varName){
-		vector<entity*> result;
-		for(int i=0; i<symtable.size();i++){
-			if(symtable[i]->varType=="fun" && symtable[i]->name == varName) {
-				result.push_back(symtable[i]);
-			}
-		}
-		if(parentPtr!=NULL) {
-			vector<entity*> parentresult = parentPtr->findFunctionInScope(varName);
-			for(int i=0; i<parentresult.size(); i++){
-				result.push_back(parentresult[i]);
-			}
-		}
-		return result;
-	}
+	// vector<entity*> findFunctionInScope(string varName){
+	// 	vector<entity*> result;
+	// 	for(int i=0; i<symtable.size();i++){
+	// 		if(symtable[i]->varType=="fun" && symtable[i]->name == varName) {
+	// 			result.push_back(symtable[i]);
+	// 		}
+	// 	}
+	// 	if(parentPtr!=NULL) {
+	// 		vector<entity*> parentresult = parentPtr->findFunctionInScope(varName);
+	// 		for(int i=0; i<parentresult.size(); i++){
+	// 			result.push_back(parentresult[i]);
+	// 		}
+	// 	}
+	// 	return result;
+	// }
 
-	entity* findFunctionInScope(string varName, int paramcount){
+	entity* findFunctionInScope(string varName){
 		for(int i=0; i<symtable.size();i++){
-			if(symtable[i]->name==varName && symtable[i]->varType=="fun" && symtable[i]->funcPtr->numofparams==paramcount) return symtable[i];
+			if(symtable[i]->name==varName && symtable[i]->varType=="fun") return symtable[i];
 		}
-		if(parentPtr!=NULL) return parentPtr->findFunctionInScope(varName,paramcount);
+		if(parentPtr!=NULL) return parentPtr->findFunctionInScope(varName);
 		return NULL;
 	}
 
@@ -138,7 +138,7 @@ struct symbTable{
 		entity *var;
 		if(t == "var") var = find(n);
 		else {
-			var = findFunctionInScope(n,pptr->numofparams);
+			var = findFunctionInScope(n);
 		}
 		if (var != NULL){
 			cerr << "Error! Previously defined "+t+": "  << n  << "\n";

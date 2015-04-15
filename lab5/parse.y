@@ -26,12 +26,10 @@
 code_unit
   : translation_unit
   {
-    vector<entity*> mainfuncvec = gobltable->findFunctionInScope("main");
-    if(mainfuncvec.size()==0){
+    entity* mainfuncvec = gobltable->findFunctionInScope("main");
+    if(mainfuncvec == NULL){
       cerr<<"Error! main function is not present!"<<endl;
       ABORT();
-    }else if(mainfuncvec.size() > 1){
-      cerr<<"Error! more than one main function cannot be defined!"<<endl;
     }
     cerr<<"Parsing is successful"<<endl;
   }
@@ -60,6 +58,14 @@ function_definition
     funType = true;
     int exitcode = gobltable->addEntity(localtableTemp->tablename,"fun", $1,false,   localtableTemp);
     if (exitcode < 0) {cerr<<"line number: "<<lineno<<endl; ABORT();}
+
+    BlockStmt* blockstmt = (BlockStmt*) $3;
+    // we have everything related to a function
+    blockstmt->print(0);std::cout<<std::endl<<std::endl;
+    std::cout << "void " << localtableTemp->tablename << "()" << "\n{\n";
+    // blockstmt->genCode();
+    std::cout << "}\n\n";
+
   }
 	;
 
@@ -151,17 +157,17 @@ compound_statement
 	: '{' '}'
   {
     $$ = new BlockStmt(new list<StmtAst*>());
-    ($$)->print(0);std::cout<<std::endl<<std::endl;
+    //($$)->print(0);std::cout<<std::endl<<std::endl;
   }
 	| '{' statement_list '}'
   {
     $$ = new BlockStmt($2);
-    ($$)->print(0);std::cout<<std::endl<<std::endl;
+    //($$)->print(0);std::cout<<std::endl<<std::endl;
   }
   | '{' declaration_list statement_list '}'
   {
     $$ = new BlockStmt($3);
-    ($$)->print(0);std::cout<<std::endl<<std::endl;
+    //($$)->print(0);std::cout<<std::endl<<std::endl;
   }
 	;
 

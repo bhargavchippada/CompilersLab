@@ -6,9 +6,9 @@ int remake(int z, float u){
 	return x;
 }
 
-int remake(int z, int u, float y){
-	return 3.0*4;
-}
+// int remake(int z, int u, float y){
+// 	return 3.0*4;
+// }
 
 void swap(int p, int q){
 	int x;
@@ -20,7 +20,7 @@ int main()
 {
 	int x, y;
 	float p[4][5];
-	p[2.0][3] = remake(1,2, 7);
+	p[2][3] = remake(1,2);
 	// printf("%f\n", p[2][3]);
 	y = x + p[1][2];
 	p[3][3] = remake(3,4);

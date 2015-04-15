@@ -451,7 +451,7 @@ class FUNCALL : public ExpAst{
         bool validate(){
             string varName = funcName->getId();
 
-            entity* ent = localtable->findFunctionInScope(varName,expSequence->size()); 
+            entity* ent = localtable->findFunctionInScope(varName); 
             entity *entVar = localtable->findInScope(varName,"var");
             
             if (entVar != NULL){
@@ -467,7 +467,8 @@ class FUNCALL : public ExpAst{
                 type = func->returntype;
 
                 list<ExpAst*>::iterator it = expSequence->begin();
-                for(int i=0; i<func->numofparams && it != expSequence->end(); i++){
+                int i;
+                for(i=0; i<func->numofparams && it != expSequence->end(); i++){
                     string ltype = func->symtable[i]->type;
                     string rtype = (*it)->getType();
                     if(ltype=="INT" && rtype=="INT");
@@ -487,6 +488,12 @@ class FUNCALL : public ExpAst{
 
                     it++;
                 }
+
+                if (i != func->numofparams or it != expSequence->end()){
+                    cerr << "Incorrect no. of parameters: " + varName << endl;
+                    return false;
+                }
+
                 
                 return true;
             }
