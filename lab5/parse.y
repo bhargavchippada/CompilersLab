@@ -62,9 +62,10 @@ function_definition
     BlockStmt* blockstmt = (BlockStmt*) $3;
     // we have everything related to a function
     blockstmt->print(0);std::cout<<std::endl<<std::endl;
-    std::cout << "void " << localtableTemp->tablename << "()" << "\n{\n";
+    // genCode();
+    outputFile <<  "void " + localtableTemp->tablename + "()" + "\n{\n";
     // blockstmt->genCode();
-    std::cout << "}\n\n";
+    outputFile << "}\n\n";
 
   }
 	;

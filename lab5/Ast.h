@@ -8,7 +8,7 @@
 #include <string>
 #include <list>
 #include <vector>
-
+#include <fstream>
 using namespace std;
 
 namespace // anonymous
@@ -19,6 +19,7 @@ namespace // anonymous
     symbTable *gobltable = new symbTable("gobl", NULL);
     symbTable *localtable = new symbTable("temp", gobltable);
     bool exitcode = false;
+    ofstream outputFile("test.asm");
 }
 
 class ExpAst : public abstract_astnode {
