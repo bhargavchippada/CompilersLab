@@ -8,18 +8,18 @@ void remake()
 	loadf((ind(ebp, -4), eax); // load to eax
 	move(eax, ecx); // ecx = eax
 	// leftpart
-	loadf((ind(ebp, 8), eax); // load to eax
+	loadf((ind(ebp, 12), eax); // load to eax
 	addi(ebp, eax); // eax = eax + ebp the address of l_exp
 	storef(ecx, ind(eax));
 
 	//New statement
 	// leftpart
-	loadi((ind(ebp, 4), eax); // load to eax
+	loadi((ind(ebp, 8), eax); // load to eax
 	addi(ebp, eax); // eax = eax + ebp the address of l_exp
 	storei(2, ind(eax));
 
 	//New statement
-	storei(0, ind(ebp,  3*F + I << )); // Save the return value in stack
+	storei(0, ind(ebp,  12 )); // Save the return value in stack
 	j(e); // Unconditional jump
 
 e:  loadi(ind(ebp), ebp); // restoring dynamic link
@@ -35,14 +35,14 @@ void swap()
 
 	//New statement
 	// leftpart
-	loadi((ind(ebp, 0), eax); // load to eax
+	loadi((ind(ebp, 4), eax); // load to eax
 	addi(ebp, eax); // eax = eax + ebp the address of l_exp
 	storei(1, ind(eax));
 
 	//New statement
 	move(1, eax);
 	intTofloat(eax);   //casting to float 
-	storef(eax, ind(ebp,  3*F + I << )); // Save the return value in stack
+	storef(eax, ind(ebp, 12)); // Save the return value in stack
 	j(e); // Unconditional jump
 
 e:  loadi(ind(ebp), ebp); // restoring dynamic link
@@ -63,6 +63,7 @@ void main()
 	storei(ecx, ind(eax));
 
 	//New statement
+	loadi((ind(ebp, -4), eax); // load to eax
 	intTofloat(eax);   //casting to float 
 	move(eax, ecx); // ecx = eax
 	// leftpart
@@ -90,9 +91,11 @@ void main()
 l1:
 	cmpi(0, eax);
 	jne(e1); // Jump if not equal
+	loadi((ind(ebp, 4), eax); // load to eax
+	addi(1, eax);
 	move(eax, ecx); // ecx = eax
 	// leftpart
-	loadi((ind(ebp, 0), eax); // load to eax
+	loadi((ind(ebp, 4), eax); // load to eax
 	addi(ebp, eax); // eax = eax + ebp the address of l_exp
 	storei(ecx, ind(eax));
 	j(l1);
@@ -125,11 +128,13 @@ e2:
 	//New statement
 	move(eax, ecx); // ecx = eax
 	// leftpart
-	loadi((ind(ebp, 0), eax); // load to eax
+	loadi((ind(ebp, 4), eax); // load to eax
 	addi(ebp, eax); // eax = eax + ebp the address of l_exp
 	storei(ecx, ind(eax));
 
 	//New statement
+	loadi((ind(ebp, -4), eax); // load to eax
+	addi(1, eax);
 	move(eax, ecx); // ecx = eax
 	// leftpart
 	loadi((ind(ebp, -4), eax); // load to eax

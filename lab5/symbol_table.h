@@ -69,6 +69,15 @@ struct symbTable{
 		return -1;
 	}
 
+	int totalParameterOffset(){
+		int res = 0;
+		for(int i=0; i<symtable.size();i++){
+			if (res < -(symtable[i]->offset))
+				res = -(symtable[i]->offset);
+		}
+		return res;
+	}
+
 	entity* find(string varName){
 		for(int i=0; i<symtable.size();i++){
 			if(symtable[i]->name==varName) return symtable[i];

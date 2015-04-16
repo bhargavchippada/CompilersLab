@@ -27,7 +27,7 @@ namespace // anonymous
 class ExpAst : public abstract_astnode {
     protected:
     string type="default";
-    // int label;           no 
+    // int label;           number of registers required
 
 	public:
 
@@ -355,11 +355,11 @@ class ArrayRef : public ExpAst {
             // identifier->genCode();
             if (type == "INT"){
                 // cerr << "here int\n";
-                outputFile << "\tloadi((ind(ebp, " << -offset << "), eax); // load to eax\n";
+                outputFile << "\tloadi((ind(ebp, " << (offset > 0 ? -offset : -offset + I /* this is because ebp is stored above parameters*/) << "), eax); // load to eax\n";
             }
             else if (type == "FLOAT"){
                 // cerr << "here float\n";
-                outputFile << "\tloadf((ind(ebp, " << -offset << "), eax); // load to eax\n";
+                outputFile << "\tloadf((ind(ebp, " << (offset > 0 ? -offset : -offset + I) << "), eax); // load to eax\n";
             }
             return;
         }
@@ -441,20 +441,26 @@ class Cast : public ExpAst{
         }
 
         void genCode(){
-            // outputFile << "\ndsfkshgjkfbgkjf\n";
+
             if (type == "INT" and singleExpAst->getType() == "FLOAT"){
                 if (singleExpAst->isConstant()){
                     outputFile << "\tmove(" << ((FLOATCONST*) singleExpAst)->evaluate()  << ", eax);\n";
                 }
+                else 
+                    singleExpAst->genCode();
+                
                 outputFile << "\tfloatToint(eax);   //casting to int\n";
             }
             if (type == "FLOAT" and singleExpAst->getType() == "INT"){
                 if (singleExpAst->isConstant()){
                     outputFile << "\tmove(" << ((INTCONST*) singleExpAst)->evaluate()  << ", eax);" << endl;
                 }
+                else 
+                    singleExpAst->genCode();
+                
                 outputFile << "\tintTofloat(eax);   //casting to float \n";
             }
-            // singleExpAst->genCode();
+
         }
 };
 
@@ -530,6 +536,10 @@ class op2 : public ExpAst{
         }
 
         void genCode(){
+
+            // int cas;
+
+
             if (op == "OR"){
 
             }
@@ -555,6 +565,13 @@ class op2 : public ExpAst{
 
             }
             else if (op == "PLUS"){
+                if (rightExpAst->isConstant()){
+                    leftExpAst->genCode();
+                    if (leftExpAst->getType() == "INT")
+                        outputFile << "\taddi(" << ((INTCONST*)rightExpAst)->evaluate() << ", eax);\n"; // or addf ??
+                    else
+                        outputFile << "\taddf(" << ((FLOATCONST*) rightExpAst)->evaluate() << ", eax);\n"; // or addf ??
+                }
 
             }
             else if (op == "MINUS"){
@@ -609,6 +626,7 @@ class op1 : public ExpAst{
 	    }
 
         void genCode(){
+           
             if (op == "PP"){
                 if (type == "INT")
                     outputFile << "\taddi(1,eax);\n";
@@ -624,6 +642,7 @@ class op1 : public ExpAst{
             else if (op == "NOT"){
 
             }
+
         }
 };
 
@@ -876,16 +895,16 @@ class ReturnStmt : public StmtAst{
         void genCode(){
             if (returnExp->isConstant()){
                 if (returnExp->getType() == "INT")
-                    outputFile <<  "\tstorei("<< ((INTCONST*) returnExp)->evaluate() <<", ind(ebp,  3*F + I << )); // Save the return value in stack" << endl;
+                    outputFile <<  "\tstorei("<< ((INTCONST*) returnExp)->evaluate() <<", ind(ebp,  " << localtable->totalParameterOffset() + I << " )); // Save the return value in stack" << endl;
                 else
-                    outputFile <<  "\tstoref("<< ((FLOATCONST*) returnExp)->evaluate() <<", ind(ebp,  3*F + I << )); // Save the return value in stack" << endl;
+                    outputFile <<  "\tstoref("<< ((FLOATCONST*) returnExp)->evaluate() <<", ind(ebp,  " << localtable->totalParameterOffset() + I << " )); // Save the return value in stack" << endl;
             }
             else{
                 returnExp->genCode();
                 if (returnExp->getType() == "INT")
-                    outputFile <<  "\tstoref(eax, ind(ebp,  3*F + I << )); // Save the return value in stack" << endl;
+                    outputFile <<  "\tstoref(eax, ind(ebp," << localtable->totalParameterOffset() + I << ")); // Save the return value in stack" << endl;
                 else
-                    outputFile <<  "\tstoref(eax, ind(ebp,  3*F + I << )); // Save the return value in stack" << endl;
+                    outputFile <<  "\tstoref(eax, ind(ebp, " << localtable->totalParameterOffset() + I << ")); // Save the return value in stack" << endl;
             }
             
             outputFile << "\tj(e); // Unconditional jump" << endl;
