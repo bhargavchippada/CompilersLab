@@ -2,7 +2,24 @@ void remake()
 {
 	pushi(ebp); // Setting dynamic link
 	move(esp,ebp); // Setting dynamic link
-	storef(ebx, ind(ebp,  3*F + I << )); // Save the return value in stack
+
+
+	//New statement
+	loadf((ind(ebp, -4), eax); // load to eax
+	move(eax, ecx); // ecx = eax
+	// leftpart
+	loadf((ind(ebp, 8), eax); // load to eax
+	addi(ebp, eax); // eax = eax + ebp the address of l_exp
+	storef(ecx, ind(eax));
+
+	//New statement
+	// leftpart
+	loadi((ind(ebp, 4), eax); // load to eax
+	addi(ebp, eax); // eax = eax + ebp the address of l_exp
+	storei(2, ind(eax));
+
+	//New statement
+	storei(0, ind(ebp,  3*F + I << )); // Save the return value in stack
 	j(e); // Unconditional jump
 
 e:  loadi(ind(ebp), ebp); // restoring dynamic link
@@ -15,6 +32,19 @@ void swap()
 	pushi(ebp); // Setting dynamic link
 	move(esp,ebp); // Setting dynamic link
 
+
+	//New statement
+	// leftpart
+	loadi((ind(ebp, 0), eax); // load to eax
+	addi(ebp, eax); // eax = eax + ebp the address of l_exp
+	storei(1, ind(eax));
+
+	//New statement
+	move(1, eax);
+	intTofloat(eax);   //casting to float 
+	storef(eax, ind(ebp,  3*F + I << )); // Save the return value in stack
+	j(e); // Unconditional jump
+
 e:  loadi(ind(ebp), ebp); // restoring dynamic link
 	popi(1); //pop stack
 	return; //return
@@ -23,53 +53,110 @@ e:  loadi(ind(ebp), ebp); // restoring dynamic link
 void main()
 {
 
-	// parameter loading :: remake
-	pushi(0); //To make space in stack for return val
-	pushi(eax); // argument to fact
-	pushf(2); // argument to fact
-	remake();
-	popi(1);
-	popf(1);
-	popi(1); // Clean up return value
+	//New statement
+	move(5, eax);
+	floatToint(eax);   //casting to int
+	move(eax, ecx); // ecx = eax
+	// leftpart
+	loadi((ind(ebp, -4), eax); // load to eax
+	addi(ebp, eax); // eax = eax + ebp the address of l_exp
+	storei(ecx, ind(eax));
 
+	//New statement
+	intTofloat(eax);   //casting to float 
+	move(eax, ecx); // ecx = eax
+	// leftpart
+	loadf((ind(ebp, -8), eax); // load to eax
+	addi(ebp, eax); // eax = eax + ebp the address of l_exp
+	storef(ecx, ind(eax));
 
-	// parameter loading :: remake
-	pushi(0); //To make space in stack for return val
-	pushi(3); // argument to fact
-	move(4, eax);
-	intTofloat(eax);
-	pushf(eax); // argument to fact
-	remake();
-	popi(1);
-	popf(1);
-	popi(1); // Clean up return value
+	//New statement
+	// leftpart
+	move(2, eax);
+	muli(-5, eax);
+	move(eax, ebx);
+	move(3, eax);
+	muli(-1, eax);
+	addi(eax, ebx);
+	move(ebx,eax);
+	addi(-12,eax);
+	addi(ebp, eax); // eax = eax + ebp the address of l_exp
+	storei(5, ind(eax));
 
+	//New statement
+
+//While loop starts:
 
 l1:
 	cmpi(0, eax);
 	jne(e1); // Jump if not equal
+	move(eax, ecx); // ecx = eax
+	// leftpart
+	loadi((ind(ebp, 0), eax); // load to eax
+	addi(ebp, eax); // eax = eax + ebp the address of l_exp
+	storei(ecx, ind(eax));
 	j(l1);
 
 e1:
 
+//While loop ends
+
+	//New statement
+
+//For loop starts:
+
 l2:
 	cmpi(0, eax);
 	jne(e2); // Jump if not equal
+	//Empty statement
+	addi(1,eax);
 	j(l2);
 
 e2:
+
+//For loop ends
+
+	//New statement
+
+//If starts:
 	cmpi(0, eax);
 	jne(l3); // Jump if not equal
+
+	//New statement
+	move(eax, ecx); // ecx = eax
+	// leftpart
+	loadi((ind(ebp, 0), eax); // load to eax
+	addi(ebp, eax); // eax = eax + ebp the address of l_exp
+	storei(ecx, ind(eax));
+
+	//New statement
+	move(eax, ecx); // ecx = eax
+	// leftpart
+	loadi((ind(ebp, -4), eax); // load to eax
+	addi(ebp, eax); // eax = eax + ebp the address of l_exp
+	storei(ecx, ind(eax));
+
+	//New statement
+
+//If starts:
+	move(1, eax);
 	cmpi(0, eax);
 	jne(l4); // Jump if not equal
+	//Empty statement
 	j(e4);
 l4:
+	//Empty statement
 
 e4:
+
+//If ends
 	j(e3);
 l3:
+	//Empty statement
 
 e3:
+
+//If ends
 	return; //return
 }
 

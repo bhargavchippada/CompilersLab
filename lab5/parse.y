@@ -65,7 +65,7 @@ function_definition
     
     if (localtableTemp->tablename != "main"){
         outputFile << "\tpushi(ebp); // Setting dynamic link" << endl;
-        outputFile << "\tmove(esp,ebp); // Setting dynamic link" << endl;
+        outputFile << "\tmove(esp,ebp); // Setting dynamic link\n" << endl;
     }
     
     blockstmt->genCode();
@@ -223,6 +223,7 @@ statement
     if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
+  // | PRINT '(' expression ')'
   ;
 
 assignment_statement

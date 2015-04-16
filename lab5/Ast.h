@@ -9,6 +9,7 @@
 #include <list>
 #include <vector>
 #include <fstream>
+
 using namespace std;
 
 namespace // anonymous
@@ -26,6 +27,7 @@ namespace // anonymous
 class ExpAst : public abstract_astnode {
     protected:
     string type="default";
+    // int label;           no 
 
 	public:
 
@@ -107,6 +109,11 @@ class INTCONST : public ExpAst {
     void print(int level){
     	cout<<string(level, ' ')<<"(IntConst "<<Num<<")";
     }
+
+    void genCode(){
+        outputFile << "\tmove(" << Num <<", eax);\n";
+    }
+
 };
 
 class FLOATCONST : public ExpAst {
@@ -145,6 +152,10 @@ class FLOATCONST : public ExpAst {
 
     void print(int level){
         cout<<string(level, ' ')<<"(FloatConst "<<Num<<")";
+    }
+
+    void genCode(){
+        outputFile << "\tmove(" << Num <<", eax);\n";
     }
 };
 
@@ -236,7 +247,17 @@ class IDENTIFIERAST : public ExpAst {
         cout<<string(level, ' ')<<"(Id \""<<identifier<<"\")";
     }
     void genCode(){
-        // cerr << "FSg\n";
+        // entity *ent = localtable->findInScope(identifier,"var");
+        // int offset = ent->offset;
+        // cerr << "here" << type << endl; //y  ? why is this NULL
+        // if (type == "INT"){
+        //     cerr << "here int\n";
+        //     outputFile << "\tloadi((ind(ebp, " << -offset << "), eax); // load to eax\n";
+        // }
+        // else if (type == "FLOAT"){
+        //     cerr << "here float\n";
+        //     outputFile << "\tloadf((ind(ebp, " << -offset << "), eax); // load to eax\n";
+        // }
     }
 };
 
@@ -245,6 +266,7 @@ class ArrayRef : public ExpAst {
     IDENTIFIERAST *identifier;
     list<ExpAst*> *expAstList;
     string type;
+    int arrayRefAddress;
 
   public:
     
@@ -267,11 +289,15 @@ class ArrayRef : public ExpAst {
         return type;
     }
 
+    int getArrayRefAddress(){
+        return arrayRefAddress;
+    }
+
     bool validate(){
         string varName = identifier->getId();
         entity *ent = localtable->findInScope(varName,"var");
         if(ent==NULL){
-            cerr<<"Error! Variable is used without declaration: "+varName<<endl;
+            cerr<<"Error! Variable is used without declaration lol : "+varName<<endl;
             exitcode=true;
             return false;
         }else{
@@ -305,7 +331,7 @@ class ArrayRef : public ExpAst {
     void print(int level){
         if(expAstList->size()==0){
             identifier->print(level);
-        }else{
+        } else{
             cout<<string(level, ' ')<<"(ArrayRef ";
             identifier->print(0);
             for (list<ExpAst*>::iterator it = expAstList->begin(); it != expAstList->end(); it++){
@@ -316,6 +342,76 @@ class ArrayRef : public ExpAst {
             cout<<")";
         }
         
+    }
+
+    void genCode(){
+
+        string varName = identifier->getId();
+        entity *ent = localtable->findInScope(varName,"var");
+        
+        int offset = ent->offset;
+
+        if (ent->dimensions.size() == 0) {  // or expAstList->size() == 0
+            // identifier->genCode();
+            if (type == "INT"){
+                // cerr << "here int\n";
+                outputFile << "\tloadi((ind(ebp, " << -offset << "), eax); // load to eax\n";
+            }
+            else if (type == "FLOAT"){
+                // cerr << "here float\n";
+                outputFile << "\tloadf((ind(ebp, " << -offset << "), eax); // load to eax\n";
+            }
+            return;
+        }
+
+        arrayRefAddress = 0;
+
+        int prod = 1;
+        for (int i = 0; i < ent->dimensions.size(); i++){
+            prod = prod * ent->dimensions[i];
+        }
+
+        int i = 0;
+        for (list<ExpAst*>::iterator it = expAstList->begin(); it != expAstList->end(); it++)
+        {
+            prod /= (ent->dimensions[i]);
+
+            // if (!(*it)->isConstant())
+            // {
+                
+                (*it)->genCode();   // assuming the value is in eax
+
+
+                if (i == 0){
+                    outputFile << "\tmuli(" << -prod << ", eax);\n";
+                    outputFile << "\tmove(eax, ebx);\n";
+                } 
+                else {
+                    outputFile << "\tmuli(" << -prod << ", eax);\n";
+                    outputFile << "\taddi(eax, ebx);\n"; // ebx += eax
+                }
+            
+
+            // }
+            // else{
+            //     cerr << i << " " << ((INTCONST* )*it)->evaluate() << endl;
+
+            //     if (i == 0){
+            //         outputFile << "\tmuli(" << ((INTCONST* )*it)->evaluate() << ", eax);\n";
+            //         outputFile << "\tmove(eax, ebx);\n";
+            //     } else {
+            //         outputFile << "\tmuli(" << ((INTCONST* )*it)->evaluate() << ", eax);\n";
+            //         outputFile << "\taddi(eax, ebx);\n"; // ebx += eax
+            //     }
+            // }
+
+            i++;
+        }
+
+        outputFile << "\tmove(ebx,eax);\n";
+        outputFile << "\taddi(" << -offset << ",eax);\n";
+
+        // get array's offset
     }
 };
 
@@ -345,19 +441,20 @@ class Cast : public ExpAst{
         }
 
         void genCode(){
+            // outputFile << "\ndsfkshgjkfbgkjf\n";
             if (type == "INT" and singleExpAst->getType() == "FLOAT"){
                 if (singleExpAst->isConstant()){
                     outputFile << "\tmove(" << ((FLOATCONST*) singleExpAst)->evaluate()  << ", eax);\n";
                 }
-                outputFile << "\tfloatToint(eax);\n";
+                outputFile << "\tfloatToint(eax);   //casting to int\n";
             }
             if (type == "FLOAT" and singleExpAst->getType() == "INT"){
                 if (singleExpAst->isConstant()){
                     outputFile << "\tmove(" << ((INTCONST*) singleExpAst)->evaluate()  << ", eax);" << endl;
                 }
-                outputFile << "\tintTofloat(eax);\n";
+                outputFile << "\tintTofloat(eax);   //casting to float \n";
             }
-            singleExpAst->genCode();
+            // singleExpAst->genCode();
         }
 };
 
@@ -431,6 +528,49 @@ class op2 : public ExpAst{
             rightExpAst->print(0);
             cout<<")";
         }
+
+        void genCode(){
+            if (op == "OR"){
+
+            }
+            else if (op == "AND"){
+
+            }
+            else if (op == "EQ_OP"){
+
+            }
+            else if (op == "NE_OP"){
+
+            }
+            else if (op == "LT"){
+
+            }
+            else if (op == "GT"){
+
+            }
+            else if (op == "LE_OP"){
+
+            }
+            else if (op == "GE_OP"){
+
+            }
+            else if (op == "PLUS"){
+
+            }
+            else if (op == "MINUS"){
+
+            }
+            else if (op == "MULT"){
+
+            }
+            else if (op == "DIV"){
+
+            }
+            else if (op == "ASSIGN"){
+
+            }
+
+        }
 };
 
 class op1 : public ExpAst{
@@ -467,6 +607,24 @@ class op1 : public ExpAst{
 	        singleExpAst->print(0);
             cout<<")";
 	    }
+
+        void genCode(){
+            if (op == "PP"){
+                if (type == "INT")
+                    outputFile << "\taddi(1,eax);\n";
+                else
+                    outputFile << "\taddf(1.0,eax);\n";
+            }
+            else if (op == "UMINUS"){
+                if (type == "INT")
+                    outputFile << "\tmuli(-1,eax);\n";
+                else
+                    outputFile << "\tmulf(-1.0,eax);\n";
+            }
+            else if (op == "NOT"){
+
+            }
+        }
 };
 
 class FUNCALL : public ExpAst{
@@ -631,11 +789,17 @@ class FUNCALL : public ExpAst{
                 outputFile << "\tpopf(" << floatParams << ");\n";
             }
 
+            // move return value into eax
+
+
+
             // Pop retrun value
             if (type == "INT"){
+                outputFile << "\tloadi(ind(esp), eax); // receives the return value\n";
                 outputFile << "\tpopi(1); // Clean up return value\n" << endl;
             } 
             else if (type == "FLOAT"){
+                outputFile << "\tloadf(ind(esp), eax); // receives the return value\n";
                 outputFile << "\tpopf(1); // pop the return value\n" << endl;
             }
         }
@@ -661,6 +825,7 @@ class BlockStmt : public StmtAst{
 
         void genCode(){
             for (list<StmtAst*>::iterator it = stmtSequence->begin(); it != stmtSequence->end();){
+                outputFile << "\n\t//New statement\n";
                 (*it)->genCode();
                 it++;
             }
@@ -709,8 +874,20 @@ class ReturnStmt : public StmtAst{
         }
 
         void genCode(){
-            outputFile <<  "\tstoref(ebx, ind(ebp,  3*F + I << )); // Save the return value in stack" << endl;
-            // outputFile <<  "\tstoref(ebx, ind(ebp," << 3*F + I << ")); // Save the return value in stack" << endl;
+            if (returnExp->isConstant()){
+                if (returnExp->getType() == "INT")
+                    outputFile <<  "\tstorei("<< ((INTCONST*) returnExp)->evaluate() <<", ind(ebp,  3*F + I << )); // Save the return value in stack" << endl;
+                else
+                    outputFile <<  "\tstoref("<< ((FLOATCONST*) returnExp)->evaluate() <<", ind(ebp,  3*F + I << )); // Save the return value in stack" << endl;
+            }
+            else{
+                returnExp->genCode();
+                if (returnExp->getType() == "INT")
+                    outputFile <<  "\tstoref(eax, ind(ebp,  3*F + I << )); // Save the return value in stack" << endl;
+                else
+                    outputFile <<  "\tstoref(eax, ind(ebp,  3*F + I << )); // Save the return value in stack" << endl;
+            }
+            
             outputFile << "\tj(e); // Unconditional jump" << endl;
         }
 };
@@ -754,9 +931,51 @@ class AssStmt : public StmtAst{
 
         void genCode(){
             // cerr << "In ass stmt\n";
-            rightExpAst->genCode();
             // cerr << "In ass stmt\n";
-            leftExpAst->genCode();
+
+            string ltype = leftExpAst->getType();
+
+            if (ltype == "INT")
+            {
+                if (rightExpAst->isConstant()){
+                    outputFile << "\t// leftpart\n";
+                    leftExpAst->genCode();  // stored in ebx (see arrayref)
+                    outputFile << "\taddi(ebp, eax); // eax = eax + ebp the address of l_exp\n";
+                    outputFile << "\tstorei(" << ((INTCONST*)rightExpAst)->evaluate() << ", ind(eax));\n";
+                }
+                else{
+                    rightExpAst->genCode(); // assume value in eax
+                    outputFile << "\tmove(eax, ecx); // ecx = eax\n";
+
+                    outputFile << "\t// leftpart\n";
+                    leftExpAst->genCode();  // stored in ebx (see arrayref)
+                    outputFile << "\taddi(ebp, eax); // eax = eax + ebp the address of l_exp\n";
+                    outputFile << "\tstorei(ecx, ind(eax));\n";
+                }
+            } 
+
+            else if (ltype == "FLOAT")
+            {
+                if (rightExpAst->isConstant()){
+                    outputFile << "\t// leftpart\n";
+                    leftExpAst->genCode();  // stored in ebx (see arrayref)
+                    outputFile << "\taddi(ebp, eax); // eax = eax + ebp the address of l_exp\n";
+                    outputFile << "\tstoref(" << ((FLOATCONST*)rightExpAst)->evaluate() << ", ind(ebx));\n";
+                }
+                else{
+                    rightExpAst->genCode(); // assume value in eax
+                    outputFile << "\tmove(eax, ecx); // ecx = eax\n";
+
+                    outputFile << "\t// leftpart\n";
+                    leftExpAst->genCode();  // stored in ebx (see arrayref)
+                    outputFile << "\taddi(ebp, eax); // eax = eax + ebp the address of l_exp\n";
+                    outputFile << "\tstoref(ecx, ind(eax));\n";
+                }
+            }
+
+            /*
+            generate code to put rightExpAst value in right ast location
+            */
         }
 };
 
@@ -782,6 +1001,7 @@ class IfStmt : public StmtAst{
         void genCode(){
             int currentLabel = globalLabel;
             globalLabel++;
+            outputFile << "\n//If starts:\n";
 
             ifExpAst->genCode();
             outputFile << "\tcmpi(0, eax);" << endl;
@@ -795,6 +1015,7 @@ class IfStmt : public StmtAst{
             elseStmtAst->genCode();
 
             outputFile << "\ne" << currentLabel << ":\n";
+            outputFile << "\n//If ends\n";
 
         }
 };
@@ -808,7 +1029,7 @@ class emptyStmt : public StmtAst{
         }
 
         void genCode(){
-            
+            outputFile << "\t//Empty statement\n";
         }
 };
 
@@ -832,6 +1053,7 @@ class WhileStmt : public StmtAst{
 
             int currentLabel = globalLabel;
             globalLabel++;
+            outputFile << "\n//While loop starts:\n";
 
             outputFile << "\nl" << currentLabel << ":\n";
             whileExpAst->genCode();
@@ -845,6 +1067,7 @@ class WhileStmt : public StmtAst{
 
 
             outputFile << "\ne" << currentLabel << ":\n";
+            outputFile << "\n//While loop ends\n";
 
         }
 
@@ -876,6 +1099,8 @@ class ForStmt : public StmtAst{
 
             int currentLabel = globalLabel;
             globalLabel++;
+            
+            outputFile << "\n//For loop starts:\n";
 
             for1ExpAst->genCode();
 
@@ -890,6 +1115,7 @@ class ForStmt : public StmtAst{
 
             outputFile << "\tj(l" << currentLabel << ");\n";
             outputFile << "\ne" << currentLabel << ":\n";
+            outputFile << "\n//For loop ends\n";
 
         }
 };
