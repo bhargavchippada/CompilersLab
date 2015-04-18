@@ -7,6 +7,8 @@ void remake()
 
 	//   New statement
 	// assignment
+	// arrayref
+	loadf(ind(ebp, ebx), eax);
 	move(eax, ecx); // ecx = eax
 	// leftpart
 	storef(ecx, ind(ebp, ebx));
@@ -62,8 +64,9 @@ void main()
 
 	//   New statement
 	// assignment
-Dfdff
-(Id y)	move(eax, ecx); // ecx = eax
+	// arrayref
+	loadi(ind(ebp, ebx), eax);
+	move(eax, ecx); // ecx = eax
 	// leftpart
 	storei(ecx, ind(ebp, 4));
 	return; //return

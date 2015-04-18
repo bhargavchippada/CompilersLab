@@ -53,7 +53,7 @@ class ExpAst : public abstract_astnode {
     }
 
     virtual void genCode(){
-
+        outputFile << "\t// ExpAst lolwut\n";
     }
 };
 
@@ -69,7 +69,7 @@ class StmtAst : public abstract_astnode {
     }
 
     virtual void genCode(){
-
+        outputFile << "\t// stmtAst\n";
     }
 };
 
@@ -112,6 +112,7 @@ class INTCONST : public ExpAst {
     }
 
     void genCode(){
+        outputFile << "\t// INTCONST\n";
         outputFile << "\tmove(" << Num <<", eax);\n";
     }
 
@@ -156,6 +157,7 @@ class FLOATCONST : public ExpAst {
     }
 
     void genCode(){
+        outputFile << "\t// FLOATCONST\n";
         outputFile << "\tmove(" << fixed << setprecision(6) << Num <<", eax);\n";
     }
 };
@@ -192,6 +194,7 @@ class STRINGCONST : public ExpAst {
     }
 
     void print(int level){
+        outputFile << "\t// STRINGCONST\n";
         cout<<string(level, ' ')<<"(StringConst "<<strlit<<")";
     }
 };
@@ -332,6 +335,7 @@ class ArrayRef : public ExpAst {
     void print(int level){
         if(expAstList->size()==0){
             identifier->print(level);
+            // cerr << "hagga\n";
         } else{
             cout<<string(level, ' ')<<"(ArrayRef ";
             identifier->print(0);
@@ -400,11 +404,9 @@ class ArrayRef : public ExpAst {
         return 1;  // means it's not a constant offset i.e. present in ebx
     }
 
-    void gencode(){
+    void genCode(){
         outputFile << "\t// arrayref\n";
-
         int x = getOffset();
-        cerr << "in array\n";
         if (x < 0){
             if (type == "INT")
                 outputFile << "\tloadi(ind(ebp, ebx), eax);\n"; //     
@@ -972,7 +974,7 @@ class AssStmt : public StmtAst{
                 if (rightExpAst->isConstant())
                 {
                     outputFile << "\t//     leftpart\n";
-                    // leftExpAst->genCode();  // stored in ebx (see arrayref)
+
                     int x = ((ArrayRef *)leftExpAst)->getOffset();
                     if (x == 1) {    // means it is an array and the value is in ebx
                         outputFile << "\tstorei(" << ((INTCONST*)rightExpAst)->evaluate() << ", ind(ebp, ebx));\n";
@@ -983,9 +985,8 @@ class AssStmt : public StmtAst{
                 }
                 else
                 {
-                    outputFile << "Dfdff\n";
-                    outputFile << rightExpAst->getExpStr();
                     rightExpAst->genCode(); // assume value in eax
+
                     outputFile << "\tmove(eax, ecx); // ecx = eax\n";
 
                     outputFile << "\t// leftpart\n";
@@ -1062,6 +1063,7 @@ class IfStmt : public StmtAst{
             /*
             Have to generate truelist , falselist and functions for backpatching, merging
             */
+            outputFile << "\t// IfAst\n";
 
             int currentLabel = globalLabel;
             globalLabel++;
@@ -1118,6 +1120,7 @@ class WhileStmt : public StmtAst{
             /*
             Have to generate truelist , falselist and functions for backpatching, merging
             */
+            outputFile << "\t// whileAst\n";
 
             int currentLabel = globalLabel;
             globalLabel++;
@@ -1168,6 +1171,7 @@ class ForStmt : public StmtAst{
             /*
             Have to generate truelist , falselist and functions for backpatching, merging
             */
+            outputFile << "\t// forAst\n";
 
             int currentLabel = globalLabel;
             globalLabel++;
