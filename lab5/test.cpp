@@ -23,8 +23,8 @@ int main()
 	float z;
 	int p[4][5];
 	// int k[4];
-	y = 5.0;
-	z = y;
+	y = 5;
+	x = y;
 	// t = x;
 	// p[2][3] = 5;
 	// p[2][p[1][1]] = remake(1,2.0);	// corrupts the value

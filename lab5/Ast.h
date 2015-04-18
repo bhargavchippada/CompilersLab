@@ -248,6 +248,8 @@ class IDENTIFIERAST : public ExpAst {
         cout<<string(level, ' ')<<"(Id \""<<identifier<<"\")";
     }
     void genCode(){
+        outputFile << "\t// identifierAST\n";
+
         // entity *ent = localtable->findInScope(identifier,"var");
         // int offset = ent->offset;
         // cerr << "here" << type << endl; //y  ? why is this NULL
@@ -267,7 +269,7 @@ class ArrayRef : public ExpAst {
     IDENTIFIERAST *identifier;
     list<ExpAst*> *expAstList;
     string type;
-    int arrayRefAddress;
+    int offset;
 
   public:
     
@@ -290,9 +292,7 @@ class ArrayRef : public ExpAst {
         return type;
     }
 
-    int getArrayRefAddress(){
-        return arrayRefAddress;
-    }
+
 
     bool validate(){
         string varName = identifier->getId();
@@ -345,7 +345,10 @@ class ArrayRef : public ExpAst {
         
     }
 
-    void genCode(){
+
+
+
+    int getOffset(){    // returns offset
 
         string varName = identifier->getId();
         entity *ent = localtable->findInScope(varName,"var");
@@ -353,19 +356,15 @@ class ArrayRef : public ExpAst {
         int offset = ent->offset;
 
         if (ent->dimensions.size() == 0) {  // or expAstList->size() == 0
-            // identifier->genCode();
             if (type == "INT"){
-                // cerr << "here int\n";
-                outputFile << "\tloadi(ind(ebp, " << (offset > 0 ? -offset : -offset + I /* this is because ebp is stored above parameters*/) << "), eax); // load to eax\n";
+                offset = (offset > 0 ? -offset - I : -offset + I);  // + I for ebp, -I beccause higher to lower addr stack
             }
             else if (type == "FLOAT"){
-                // cerr << "here float\n";
-                outputFile << "\tloadf(ind(ebp, " << (offset > 0 ? -offset : -offset + I) << "), eax); // load to eax\n";
+                offset = (offset > 0 ? -offset - F : -offset + I);
             }
-            return;
+            return offset;
         }
 
-        arrayRefAddress = 0;
 
         int prod = 1;
         for (int i = 0; i < ent->dimensions.size(); i++){
@@ -393,27 +392,34 @@ class ArrayRef : public ExpAst {
                 }
             
 
-            // }
-            // else{
-            //     cerr << i << " " << ((INTCONST* )*it)->evaluate() << endl;
-
-            //     if (i == 0){
-            //         outputFile << "\tmuli(" << ((INTCONST* )*it)->evaluate() << ", eax);\n";
-            //         outputFile << "\tmove(eax, ebx);\n";
-            //     } else {
-            //         outputFile << "\tmuli(" << ((INTCONST* )*it)->evaluate() << ", eax);\n";
-            //         outputFile << "\taddi(eax, ebx);\n"; // ebx += eax
-            //     }
-            // }
-
             i++;
         }
 
-        outputFile << "\tmove(ebx,eax);\n";
-        outputFile << "\taddi(" << -offset << ",eax);\n";
+        outputFile << "\taddi(" << offset << ",ebx);\n";
 
-        // get array's offset
+        return 1;  // means it's not a constant offset i.e. present in ebx
     }
+
+    void gencode(){
+        outputFile << "\t// arrayref\n";
+
+        int x = getOffset();
+        cerr << "in array\n";
+        if (x < 0){
+            if (type == "INT")
+                outputFile << "\tloadi(ind(ebp, ebx), eax);\n"; //     
+            else
+                outputFile << "\tloadf(ind(ebp, ebx), eax);\n"; //     
+        }
+        else{
+            if (type == "INT")
+                outputFile << "\tloadi(ind(ebp, " << x << "), eax);\n"; // change eax to another register which you want to load on
+            else 
+                outputFile << "\tloadf(ind(ebp, " << x << "), eax);\n"; // change eax to another register which you want to load on
+        }
+        
+    }
+
 };
 
 class Cast : public ExpAst{
@@ -442,6 +448,7 @@ class Cast : public ExpAst{
         }
 
         void genCode(){
+            outputFile << "\t// cast\n";
 
             if (type == "INT" and singleExpAst->getType() == "FLOAT"){
                 if (singleExpAst->isConstant()){
@@ -540,6 +547,7 @@ class op2 : public ExpAst{
 
             // int cas;
 
+            outputFile << "\t// op2\n";
 
             if (op == "OR"){
 
@@ -627,7 +635,7 @@ class op1 : public ExpAst{
 	    }
 
         void genCode(){
-           
+           outputFile << "\t// op1\n";
             if (op == "PP"){
                 if (type == "INT")
                     outputFile << "\taddi(1,eax);\n";
@@ -745,6 +753,8 @@ class FUNCALL : public ExpAst{
 
         void genCode(){
             // cerr << "Here\n\n";
+            outputFile << "\t// funcallAST\n";
+
             // Push the return value
             outputFile << "\n\t// parameter loading :: " << funcName->getId() << endl;
             if (type == "INT"){
@@ -841,6 +851,8 @@ class BlockStmt : public StmtAst{
         }
 
         void genCode(){
+            outputFile << "\t// blockstmt\n";
+
             for (list<StmtAst*>::iterator it = stmtSequence->begin(); it != stmtSequence->end();){
                 outputFile << "\n\t//   New statement\n";
                 (*it)->genCode();
@@ -891,6 +903,8 @@ class ReturnStmt : public StmtAst{
         }
 
         void genCode(){
+            outputFile << "\t// returnast\n";
+
             if (returnExp->isConstant()){
                 if (returnExp->getType() == "INT")
                     outputFile <<  "\tstorei("<< ((INTCONST*) returnExp)->evaluate() <<", ind(ebp,  " << localtable->totalParameterOffset() + I /* +I because ebp*/ << " )); // Save the return value in stack" << endl;
@@ -949,6 +963,7 @@ class AssStmt : public StmtAst{
         void genCode(){
             // cerr << "In ass stmt\n";
             // cerr << "In ass stmt\n";
+            outputFile << "\t// assignment\n";
 
             string ltype = leftExpAst->getType();   // anyway both expressions are of same type
 
@@ -957,19 +972,31 @@ class AssStmt : public StmtAst{
                 if (rightExpAst->isConstant())
                 {
                     outputFile << "\t//     leftpart\n";
-                    leftExpAst->genCode();  // stored in ebx (see arrayref)
-                    outputFile << "\taddi(ebp, eax); // eax = eax + ebp the address of l_exp\n";
-                    outputFile << "\tstorei(" << ((INTCONST*)rightExpAst)->evaluate() << ", ind(eax));\n";
+                    // leftExpAst->genCode();  // stored in ebx (see arrayref)
+                    int x = ((ArrayRef *)leftExpAst)->getOffset();
+                    if (x == 1) {    // means it is an array and the value is in ebx
+                        outputFile << "\tstorei(" << ((INTCONST*)rightExpAst)->evaluate() << ", ind(ebp, ebx));\n";
+                    }
+                    else{
+                        outputFile << "\tstorei(" << ((INTCONST*)rightExpAst)->evaluate() << ", ind(ebp, "<< x <<"));\n";
+                    }
                 }
                 else
                 {
+                    outputFile << "Dfdff\n";
+                    outputFile << rightExpAst->getExpStr();
                     rightExpAst->genCode(); // assume value in eax
                     outputFile << "\tmove(eax, ecx); // ecx = eax\n";
 
                     outputFile << "\t// leftpart\n";
-                    leftExpAst->genCode();  // stored in ebx (see arrayref)
-                    outputFile << "\taddi(ebp, eax); // eax = eax + ebp the address of l_exp\n";
-                    outputFile << "\tstorei(ecx, ind(eax));\n";
+                    
+                    int x = ((ArrayRef *)leftExpAst)->getOffset();
+                    if (x == 1) {    // means it is an array and the offset value is in ebx
+                        outputFile << "\tstorei(ecx, ind(ebp, ebx));\n";
+                    }
+                    else{
+                        outputFile << "\tstorei(ecx, ind(ebp, "<< x <<"));\n";
+                    }
                 }
             } 
 
@@ -978,9 +1005,14 @@ class AssStmt : public StmtAst{
                 if (rightExpAst->isConstant())
                 {
                     outputFile << "\t// leftpart\n";
-                    leftExpAst->genCode();  // stored in ebx (see arrayref)
-                    outputFile << "\taddi(ebp, eax); // eax = eax + ebp the address of l_exp\n";
-                    outputFile << "\tstoref(" << fixed << setprecision(6) << ((FLOATCONST*)rightExpAst)->evaluate() << ", ind(ebx));\n";
+
+                    int x = ((ArrayRef *)leftExpAst)->getOffset();
+                    if (x < 0) {    // means it is an array and the value is in ebx
+                        outputFile << "\tstoref(" << fixed << setprecision(6) << ((FLOATCONST*)rightExpAst)->evaluate() << ", ind(ebp, ebx));\n";
+                    }
+                    else{
+                        outputFile << "\tstoref(" << fixed << setprecision(6) << ((FLOATCONST*)rightExpAst)->evaluate() << ", ind(ebp, "<< x <<"));\n";
+                    }
                 }
                 else
                 {
@@ -988,9 +1020,15 @@ class AssStmt : public StmtAst{
                     outputFile << "\tmove(eax, ecx); // ecx = eax\n";
 
                     outputFile << "\t// leftpart\n";
-                    leftExpAst->genCode();  // stored in ebx (see arrayref)
-                    outputFile << "\taddi(ebp, eax); // eax = eax + ebp the address of l_exp\n";
-                    outputFile << "\tstoref(ecx, ind(eax));\n";
+
+                    int x = ((ArrayRef *)leftExpAst)->getOffset();
+                    if (x > 0) {    // means it is an array and the offset value is in ebx
+                        outputFile << "\tstoref(ecx, ind(ebp, ebx));\n";
+                    }
+                    else{
+                        outputFile << "\tstoref(ecx, ind(ebp, "<< x <<"));\n";
+                    }
+
                 }
             }
 

@@ -60,12 +60,15 @@ protected:
 	// Store an immediate integer to memory
 	void storei(int i, char* mem) {
 		*((int*) mem) = i;
+		cout << "fdfg machinr\n";
 	}
 
 	// Store an integer from register to memory
 	void storei(Reg r, char* mem) {
 		char* reg = getReg(r);
+		cout << "fdfg machinr\n";
 		*((int*) mem) = *((int*) reg);
+		cout << "fdfg machinr\n";
 	}
 
 	// Store an immediate floating point number to memory
