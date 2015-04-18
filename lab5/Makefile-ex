@@ -1,4 +1,4 @@
-all: a.out
+all: clean a.out
 
 a.out: machine.cc code.asm
 	g++ -g3 -O0 machine.cc
@@ -7,4 +7,4 @@ a.out: machine.cc code.asm
 .PHONY: clean
 	
 clean:
-	rm a.out
+	rm -f a.out

@@ -380,7 +380,7 @@ private:
 };
 
 class CMachine: public CMachineBase {
-#include "code.asm"
+#include "test.asm"
 };
 
 int main() {

@@ -6,6 +6,7 @@
 #include <iostream>
 #include <stdio.h>
 #include <string>
+#include <iomanip>
 #include <list>
 #include <vector>
 #include <fstream>
@@ -27,7 +28,7 @@ namespace // anonymous
 class ExpAst : public abstract_astnode {
     protected:
     string type="default";
-    // int label;           number of registers required
+    int label;              //  number of registers required
 
 	public:
 
@@ -155,7 +156,7 @@ class FLOATCONST : public ExpAst {
     }
 
     void genCode(){
-        outputFile << "\tmove(" << Num <<", eax);\n";
+        outputFile << "\tmove(" << fixed << setprecision(6) << Num <<", eax);\n";
     }
 };
 
@@ -355,11 +356,11 @@ class ArrayRef : public ExpAst {
             // identifier->genCode();
             if (type == "INT"){
                 // cerr << "here int\n";
-                outputFile << "\tloadi((ind(ebp, " << (offset > 0 ? -offset : -offset + I /* this is because ebp is stored above parameters*/) << "), eax); // load to eax\n";
+                outputFile << "\tloadi(ind(ebp, " << (offset > 0 ? -offset : -offset + I /* this is because ebp is stored above parameters*/) << "), eax); // load to eax\n";
             }
             else if (type == "FLOAT"){
                 // cerr << "here float\n";
-                outputFile << "\tloadf((ind(ebp, " << (offset > 0 ? -offset : -offset + I) << "), eax); // load to eax\n";
+                outputFile << "\tloadf(ind(ebp, " << (offset > 0 ? -offset : -offset + I) << "), eax); // load to eax\n";
             }
             return;
         }
@@ -444,7 +445,7 @@ class Cast : public ExpAst{
 
             if (type == "INT" and singleExpAst->getType() == "FLOAT"){
                 if (singleExpAst->isConstant()){
-                    outputFile << "\tmove(" << ((FLOATCONST*) singleExpAst)->evaluate()  << ", eax);\n";
+                    outputFile << "\tmove(" << fixed << setprecision(6) << ((FLOATCONST*) singleExpAst)->evaluate()  << ", eax);\n";
                 }
                 else 
                     singleExpAst->genCode();
@@ -570,7 +571,7 @@ class op2 : public ExpAst{
                     if (leftExpAst->getType() == "INT")
                         outputFile << "\taddi(" << ((INTCONST*)rightExpAst)->evaluate() << ", eax);\n"; // or addf ??
                     else
-                        outputFile << "\taddf(" << ((FLOATCONST*) rightExpAst)->evaluate() << ", eax);\n"; // or addf ??
+                        outputFile << "\taddf(" << fixed << setprecision(6) << ((FLOATCONST*) rightExpAst)->evaluate() << ", eax);\n"; // or addf ??
                 }
 
             }
@@ -774,7 +775,7 @@ class FUNCALL : public ExpAst{
                     }
                     if (ltype == "FLOAT"){
                         floatParams++;
-                        outputFile << "\tpushf(" << ((FLOATCONST*) (*it))->evaluate()  << "); // argument to fact" << endl;
+                        outputFile << "\tpushf(" << fixed << setprecision(6) << ((FLOATCONST*) (*it))->evaluate()  << "); // argument to fact" << endl;
                     }
                 }
                 else{
@@ -809,9 +810,6 @@ class FUNCALL : public ExpAst{
             }
 
             // move return value into eax
-
-
-
             // Pop retrun value
             if (type == "INT"){
                 outputFile << "\tloadi(ind(esp), eax); // receives the return value\n";
@@ -844,7 +842,7 @@ class BlockStmt : public StmtAst{
 
         void genCode(){
             for (list<StmtAst*>::iterator it = stmtSequence->begin(); it != stmtSequence->end();){
-                outputFile << "\n\t//New statement\n";
+                outputFile << "\n\t//   New statement\n";
                 (*it)->genCode();
                 it++;
             }
@@ -895,9 +893,9 @@ class ReturnStmt : public StmtAst{
         void genCode(){
             if (returnExp->isConstant()){
                 if (returnExp->getType() == "INT")
-                    outputFile <<  "\tstorei("<< ((INTCONST*) returnExp)->evaluate() <<", ind(ebp,  " << localtable->totalParameterOffset() + I << " )); // Save the return value in stack" << endl;
+                    outputFile <<  "\tstorei("<< ((INTCONST*) returnExp)->evaluate() <<", ind(ebp,  " << localtable->totalParameterOffset() + I /* +I because ebp*/ << " )); // Save the return value in stack" << endl;
                 else
-                    outputFile <<  "\tstoref("<< ((FLOATCONST*) returnExp)->evaluate() <<", ind(ebp,  " << localtable->totalParameterOffset() + I << " )); // Save the return value in stack" << endl;
+                    outputFile <<  "\tstoref("<< fixed << setprecision(6) << ((FLOATCONST*) returnExp)->evaluate() <<", ind(ebp,  " << localtable->totalParameterOffset() + I << " )); // Save the return value in stack" << endl;
             }
             else{
                 returnExp->genCode();
@@ -952,17 +950,19 @@ class AssStmt : public StmtAst{
             // cerr << "In ass stmt\n";
             // cerr << "In ass stmt\n";
 
-            string ltype = leftExpAst->getType();
+            string ltype = leftExpAst->getType();   // anyway both expressions are of same type
 
             if (ltype == "INT")
             {
-                if (rightExpAst->isConstant()){
-                    outputFile << "\t// leftpart\n";
+                if (rightExpAst->isConstant())
+                {
+                    outputFile << "\t//     leftpart\n";
                     leftExpAst->genCode();  // stored in ebx (see arrayref)
                     outputFile << "\taddi(ebp, eax); // eax = eax + ebp the address of l_exp\n";
                     outputFile << "\tstorei(" << ((INTCONST*)rightExpAst)->evaluate() << ", ind(eax));\n";
                 }
-                else{
+                else
+                {
                     rightExpAst->genCode(); // assume value in eax
                     outputFile << "\tmove(eax, ecx); // ecx = eax\n";
 
@@ -975,13 +975,15 @@ class AssStmt : public StmtAst{
 
             else if (ltype == "FLOAT")
             {
-                if (rightExpAst->isConstant()){
+                if (rightExpAst->isConstant())
+                {
                     outputFile << "\t// leftpart\n";
                     leftExpAst->genCode();  // stored in ebx (see arrayref)
                     outputFile << "\taddi(ebp, eax); // eax = eax + ebp the address of l_exp\n";
-                    outputFile << "\tstoref(" << ((FLOATCONST*)rightExpAst)->evaluate() << ", ind(ebx));\n";
+                    outputFile << "\tstoref(" << fixed << setprecision(6) << ((FLOATCONST*)rightExpAst)->evaluate() << ", ind(ebx));\n";
                 }
-                else{
+                else
+                {
                     rightExpAst->genCode(); // assume value in eax
                     outputFile << "\tmove(eax, ecx); // ecx = eax\n";
 
@@ -993,7 +995,7 @@ class AssStmt : public StmtAst{
             }
 
             /*
-            generate code to put rightExpAst value in right ast location
+            generated code to put rightExpAst value in right ast location
             */
         }
 };
@@ -1018,6 +1020,11 @@ class IfStmt : public StmtAst{
         }
 
         void genCode(){
+
+            /*
+            Have to generate truelist , falselist and functions for backpatching, merging
+            */
+
             int currentLabel = globalLabel;
             globalLabel++;
             outputFile << "\n//If starts:\n";
@@ -1069,6 +1076,10 @@ class WhileStmt : public StmtAst{
         }
 
         void genCode(){
+            
+            /*
+            Have to generate truelist , falselist and functions for backpatching, merging
+            */
 
             int currentLabel = globalLabel;
             globalLabel++;
@@ -1115,6 +1126,10 @@ class ForStmt : public StmtAst{
         }
         
         void genCode(){
+            
+            /*
+            Have to generate truelist , falselist and functions for backpatching, merging
+            */
 
             int currentLabel = globalLabel;
             globalLabel++;

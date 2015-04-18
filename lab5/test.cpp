@@ -26,7 +26,7 @@ int main()
 	y = 5.0;
 	z = y;
 	// t = x;
-	p[2][3] = 5;
+	// p[2][3] = 5;
 	// p[2][p[1][1]] = remake(1,2.0);	// corrupts the value
 	
 	// p[2][remake(1,2.0)] = remake(1,2.0);	// corrupts the value of ebx
@@ -39,8 +39,8 @@ int main()
 	// int z[200];
 
 	// y = p[1][1];
-	while(x < 4) x = x + 1;
+	// while(x < 4) x = x + 1;
 
-	for (x=0.5; x <10; x++);
-	if (y >1) {x=x-1; y=y+1; if (1) ; else ;} else ;
+	// for (x=0.5; x <10; x++);
+	// if (y >1) {x=x-1; y=y+1; if (1) ; else ;} else ;
 }
