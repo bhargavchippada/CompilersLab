@@ -20,20 +20,20 @@ float swap(int p, int q){
 int main()
 {
 	int x, y;
-	float z;
+	// float z;
 	int p[4][5];
 	// int k[4];
 	y = 5;
 	x = y;
 	// t = x;
-	// p[2][3] = 5;
+	p[2][3] = 5;
 	// p[2][p[1][1]] = remake(1,2.0);	// corrupts the value
 	
 	// p[2][remake(1,2.0)] = remake(1,2.0);	// corrupts the value of ebx
 	
 	// printf("%f\n", p[2][3]);
 	// y = x + p[1][2];
-	// p[3][3] = remake(3,4);
+	p[3][3] = remake(3,4);
 	// swap(p[1][2], p[3][4]);
 	//swap = 30;
 	// int z[200];

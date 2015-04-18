@@ -358,14 +358,15 @@ class ArrayRef : public ExpAst {
         entity *ent = localtable->findInScope(varName,"var");
         
         int offset = ent->offset;
+        
+        if (type == "INT"){
+            offset = (offset >= 0 ? -offset - I : -offset);  // + I for ebp, -I beccause higher to lower addr stack
+        }
+        else if (type == "FLOAT"){
+            offset = (offset >= 0 ? -offset - F : -offset + I - F);
+        }
 
         if (ent->dimensions.size() == 0) {  // or expAstList->size() == 0
-            if (type == "INT"){
-                offset = (offset > 0 ? -offset - I : -offset + I);  // + I for ebp, -I beccause higher to lower addr stack
-            }
-            else if (type == "FLOAT"){
-                offset = (offset > 0 ? -offset - F : -offset + I);
-            }
             return offset;
         }
 
@@ -407,7 +408,7 @@ class ArrayRef : public ExpAst {
     void genCode(){
         outputFile << "\t// arrayref\n";
         int x = getOffset();
-        if (x < 0){
+        if (x == 1){
             if (type == "INT")
                 outputFile << "\tloadi(ind(ebp, ebx), eax);\n"; //     
             else
@@ -1008,7 +1009,7 @@ class AssStmt : public StmtAst{
                     outputFile << "\t// leftpart\n";
 
                     int x = ((ArrayRef *)leftExpAst)->getOffset();
-                    if (x < 0) {    // means it is an array and the value is in ebx
+                    if (x == 1) {    // means it is an array and the value is in ebx
                         outputFile << "\tstoref(" << fixed << setprecision(6) << ((FLOATCONST*)rightExpAst)->evaluate() << ", ind(ebp, ebx));\n";
                     }
                     else{
@@ -1023,7 +1024,7 @@ class AssStmt : public StmtAst{
                     outputFile << "\t// leftpart\n";
 
                     int x = ((ArrayRef *)leftExpAst)->getOffset();
-                    if (x > 0) {    // means it is an array and the offset value is in ebx
+                    if (x == 1) {    // means it is an array and the offset value is in ebx
                         outputFile << "\tstoref(ecx, ind(ebp, ebx));\n";
                     }
                     else{
