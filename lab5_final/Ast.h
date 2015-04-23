@@ -20,10 +20,15 @@ namespace // anonymous
     bool funType = true;
     string varType;
     int globalLabel = 1;
+    vector<string> goblcodearray;
     symbTable *gobltable = new symbTable("gobl", NULL);
     symbTable *localtable = new symbTable("temp", gobltable);
     bool exitcode = false;
     ofstream outputFile("test.asm");
+
+    void gencode(string s){
+        goblcodearray.push_back(s);
+    }
 }
 
 class ExpAst : public abstract_astnode {
@@ -49,7 +54,7 @@ class ExpAst : public abstract_astnode {
     }
 
     virtual void genCode(){
-
+        gencode("dummy gen code");
     }
 };
 
@@ -65,7 +70,7 @@ class StmtAst : public abstract_astnode {
     }
 
     virtual void genCode(){
-
+        gencode("dummy gen code");
     }
 };
 
@@ -602,12 +607,6 @@ class ReturnStmt : public StmtAst{
             returnExp->print(0);
             cout<<")";
         }
-
-        void genCode(){
-            outputFile <<  "\tstoref(ebx, ind(ebp,  3*F + I << )); // Save the return value in stack" << endl;
-            // outputFile <<  "\tstoref(ebx, ind(ebp," << 3*F + I << ")); // Save the return value in stack" << endl;
-            outputFile << "\tj(e); // Unconditional jump" << endl;
-        }
 };
 
 class AssStmt : public StmtAst{
@@ -646,10 +645,6 @@ class AssStmt : public StmtAst{
             rightExpAst->print(0);
             cout<<")";
         }
-
-        void genCode(){
-            
-        }
 };
 
 class IfStmt : public StmtAst{
@@ -669,25 +664,6 @@ class IfStmt : public StmtAst{
             cout<<endl;
             elseStmtAst->print(level+4);
             cout<<")";
-        }
-
-        void genCode(){
-            int currentLabel = globalLabel;
-            globalLabel++;
-
-            ifExpAst->genCode();
-            outputFile << "\tcmpi(0, eax);" << endl;
-            outputFile << "\tjne(l" << currentLabel << "); // Jump if not equal" << endl;
-            
-            thenStmtAst->genCode();
-            outputFile << "\tj(e" << currentLabel << ");\n";
-
-
-            outputFile << "l" << currentLabel << ":\n";
-            elseStmtAst->genCode();
-
-            outputFile << "e" << currentLabel << ":\n";
-
         }
 };
 
@@ -719,27 +695,6 @@ class WhileStmt : public StmtAst{
             thenStmtAst->print(level+7);
             cout<<")";
         }
-
-        void genCode(){
-
-            int currentLabel = globalLabel;
-            globalLabel++;
-
-            outputFile << "l" << currentLabel << ":\n";
-            whileExpAst->genCode();
-
-            outputFile << "\tcmpi(0, eax);" << endl;
-            outputFile << "\tjne(e" << currentLabel << "); // Jump if not equal" << endl;
-            
-            thenStmtAst->genCode();
-            
-            outputFile << "\tj(l" << currentLabel << ");\n";
-
-
-            outputFile << "e" << currentLabel << ":\n";
-
-        }
-
 };
 
 class ForStmt : public StmtAst{
@@ -762,27 +717,6 @@ class ForStmt : public StmtAst{
             cout<<endl;
             thenStmtAst->print(level+5);
             cout<<")";
-        }
-        
-        void genCode(){
-
-            int currentLabel = globalLabel;
-            globalLabel++;
-
-            for1ExpAst->genCode();
-
-            outputFile << "l" << currentLabel << ":\n";
-            for2ExpAst->genCode();
-
-            outputFile << "\tcmpi(0, eax);" << endl;
-            outputFile << "\tjne(e" << currentLabel << "); // Jump if not equal" << endl;
-            
-            thenStmtAst->genCode();
-            for3ExpAst->genCode();
-
-            outputFile << "\tj(l" << currentLabel << ");\n";
-            outputFile << "e" << currentLabel << ":\n";
-
         }
 };
 

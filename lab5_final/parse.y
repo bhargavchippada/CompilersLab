@@ -32,6 +32,9 @@ code_unit
       ABORT();
     }
     cerr<<"Parsing is successful"<<endl;
+
+    for(int i=0; i<goblcodearray.size(); i++) outputFile << goblcodearray[i]+"\n";
+
   }
   ;
 
@@ -61,22 +64,23 @@ function_definition
     // we have everything related to a function
     blockstmt->print(0);std::cout<<std::endl<<std::endl;
     // genCode();
-    outputFile <<  "void " + localtableTemp->tablename + "()" + "\n{\n";
+    gencode("void " + localtableTemp->tablename + "()");
+    gencode("{");
     
     if (localtableTemp->tablename != "main"){
-        outputFile << "\tpushi(ebp); // Setting dynamic link" << endl;
-        outputFile << "\tmove(esp,ebp); // Setting dynamic link" << endl;
+        gencode("\tpushi(ebp); // Setting dynamic link");
+        gencode("\tmove(esp,ebp); // Setting dynamic link");
     }
     
     blockstmt->genCode();
 
     if (localtableTemp->tablename != "main"){
-      outputFile <<  "e:  loadi(ind(ebp), ebp); // restoring dynamic link" << endl;
-      outputFile <<  "\tpopi(1); //pop stack" << endl;
+      gencode("e:  loadi(ind(ebp), ebp); // restoring dynamic link");
+      gencode("\tpopi(1); //pop stack");
     }
-    outputFile << "\treturn; //return" << endl;
-
-    outputFile << "}\n\n";
+    gencode("\treturn; //return");
+    gencode("}");
+    gencode("");
 
     localtable = new symbTable("temp", gobltable);
     isParam = true;
