@@ -5,11 +5,44 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
-#include <map>
+#include <stack>
 
 using namespace std;
 
+#define I 4
+#define F 4
+
 struct symbTable;
+
+struct regHandler{
+	stack<string> regs;
+	int max_regs;
+
+	regHandler(){
+		max_regs = 2;
+		//regs.push("esi");
+		//regs.push("edi");
+		//regs.push("edx");
+		//regs.push("ecx");
+		regs.push("ebx");
+		regs.push("eax");
+	}
+
+	void swap(){
+		string top = regs.top();
+		regs.pop();
+		string second = regs.top();
+		regs.pop();
+		regs.push(top);
+		regs.push(second);
+	}
+
+	string topstack(){
+		return regs.top();
+	}
+
+};
+
 
 struct entity{
 	string name;
@@ -46,7 +79,6 @@ struct entity{
 struct symbTable{
 	string tablename, returntype;
 	int numofparams=0;
-	map<string, entity> table;		// maps variable name to entity
 	vector<entity*> symtable;
 	symbTable* parentPtr;
 	int paramoffset, offset;
@@ -59,8 +91,8 @@ struct symbTable{
 	}
 
 	int giveSize(string s){
-		if (s == "INT") return 4;
-		if (s == "FLOAT") return 4;
+		if (s == "INT") return I;
+		if (s == "FLOAT") return F;
 		if (s == "VOID") return 0;
 		return -1;
 	}
@@ -79,22 +111,6 @@ struct symbTable{
 		if(parentPtr!=NULL) return parentPtr->findInScope(varName,varType);
 		return NULL;
 	}
-
-	// vector<entity*> findFunctionInScope(string varName){
-	// 	vector<entity*> result;
-	// 	for(int i=0; i<symtable.size();i++){
-	// 		if(symtable[i]->varType=="fun" && symtable[i]->name == varName) {
-	// 			result.push_back(symtable[i]);
-	// 		}
-	// 	}
-	// 	if(parentPtr!=NULL) {
-	// 		vector<entity*> parentresult = parentPtr->findFunctionInScope(varName);
-	// 		for(int i=0; i<parentresult.size(); i++){
-	// 			result.push_back(parentresult[i]);
-	// 		}
-	// 	}
-	// 	return result;
-	// }
 
 	entity* findFunctionInScope(string varName){
 		for(int i=0; i<symtable.size();i++){

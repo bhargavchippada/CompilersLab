@@ -26,16 +26,25 @@ namespace // anonymous
     bool exitcode = false;
     ofstream outputFile("test.asm");
 
+    regHandler *reghandler = new regHandler();
+
     void gencode(string s){
         goblcodearray.push_back(s);
     }
-}
+
+    int computelabel(int l1, int l2){
+        if(l1==l2) return l1+1;
+        else if(l1>l2) return l1;
+        else return l2;
+    }
+} 
 
 class ExpAst : public abstract_astnode {
     protected:
     string type="default";
 
 	public:
+    int label = -1;
 
     virtual void print (int level){
         cout<<string(level, ' ')<<"This is an abstract ExpAst class" << endl;
@@ -53,8 +62,17 @@ class ExpAst : public abstract_astnode {
         cerr<<"Error! default validation"<<endl;
     }
 
+    virtual bool isConstant(){
+        return false;
+    }
+
+    virtual int labelcalc(bool left){
+        label = -1;
+        return label;
+    }
+
     virtual void genCode(){
-        gencode("dummy gen code");
+        gencode("\texpast dummy gen code");
     }
 };
 
@@ -70,7 +88,7 @@ class StmtAst : public abstract_astnode {
     }
 
     virtual void genCode(){
-        gencode("dummy gen code");
+        gencode("\tstmtast dummy gen code");
     }
 };
 
@@ -80,6 +98,8 @@ class INTCONST : public ExpAst {
     string type = "INT";
 
   public:
+    int label = -1;
+
     INTCONST(int n){
     	Num = n;
     }
@@ -100,12 +120,23 @@ class INTCONST : public ExpAst {
         return true;
     }
 
+    bool isConstant(){
+        return true;
+    }
+
     string getExpStr(){
         return "(IntConst "+to_string(Num)+")";
     }
 
     void print(int level){
     	cout<<string(level, ' ')<<"(IntConst "<<Num<<")";
+    }
+
+    int labelcalc(bool left){
+        if(left) label = 1;
+        else label = 0;
+
+        return label;
     }
 };
 
@@ -115,6 +146,8 @@ class FLOATCONST : public ExpAst {
     string type = "FLOAT";
 
   public:
+    int label = -1;
+
     FLOATCONST(float f){
         Num = f;
     }
@@ -135,12 +168,23 @@ class FLOATCONST : public ExpAst {
         return true;
     }
 
+    bool isConstant(){
+        return true;
+    }
+
     string getExpStr(){
         return "(FloatConst "+to_string(Num)+")";
     }
 
     void print(int level){
         cout<<string(level, ' ')<<"(FloatConst "<<Num<<")";
+    }
+
+    int labelcalc(bool left){
+        if(left) label = 1;
+        else label = 0;
+
+        return label;
     }
 };
 
@@ -150,7 +194,8 @@ class STRINGCONST : public ExpAst {
     string type = "STRING";
 
   public:
-    
+    int label = -1;
+
     STRINGCONST(string s){
         strlit = s;
     }
@@ -171,12 +216,23 @@ class STRINGCONST : public ExpAst {
         return true;
     }
 
+    bool isConstant(){
+        return true;
+    }
+
     string getExpStr(){
         return "(StringConst "+strlit+")";
     }
 
     void print(int level){
         cout<<string(level, ' ')<<"(StringConst "<<strlit<<")";
+    }
+
+    int labelcalc(bool left){
+        if(left) label = 1;
+        else label = 0;
+
+        return label;
     }
 };
 
@@ -186,14 +242,10 @@ class IDENTIFIERAST : public ExpAst {
     string type="NULL";
 
   public:
+    int label = -1;
+
     IDENTIFIERAST(string s){
         identifier = s;
-        /*
-        if(!localtable->inScope(s)) {
-            cerr<<"Error! Variable is used without declaration: "+s<<endl;
-            exitcode=true;
-        }
-        */
     }
 
     void setValue(string s){
@@ -231,6 +283,12 @@ class IDENTIFIERAST : public ExpAst {
     void print(int level){
         cout<<string(level, ' ')<<"(Id \""<<identifier<<"\")";
     }
+
+    int labelcalc(bool left){
+       label = 1;
+
+       return label;
+    }
 };
 
 class ArrayRef : public ExpAst {
@@ -240,7 +298,8 @@ class ArrayRef : public ExpAst {
     string type;
 
   public:
-    
+    int label = -1;
+
     ArrayRef(IDENTIFIERAST *id){
         identifier = id;
         expAstList = new list<ExpAst*>();
@@ -310,6 +369,16 @@ class ArrayRef : public ExpAst {
         }
         
     }
+
+    int labelcalc(bool left){
+        label = identifier->labelcalc(true);
+
+        for (list<ExpAst*>::iterator it = expAstList->begin(); it != expAstList->end(); it++){
+            label = computelabel(label, (*it)->labelcalc(false));
+        }
+
+        return label;
+    }
 };
 
 class Cast : public ExpAst{
@@ -317,6 +386,8 @@ class Cast : public ExpAst{
         ExpAst *singleExpAst;
         string type;
     public:
+        int label = -1;
+
         Cast(string ty, ExpAst *singleExp): type(ty), singleExpAst(singleExp){}
         
         string getType(){
@@ -336,6 +407,11 @@ class Cast : public ExpAst{
             singleExpAst->print(0);
             cout<<")";
         }
+
+        int labelcalc(bool left){
+            label = singleExpAst->labelcalc(true);
+            return label;
+        }
 };
 
 class op2 : public ExpAst{
@@ -346,6 +422,8 @@ class op2 : public ExpAst{
         string type="?";
 
     public:
+        int label = -1;
+
         op2(ExpAst *left, string ope, ExpAst *right): leftExpAst(left), op(ope), rightExpAst(right){}
 
         string getType(){
@@ -408,6 +486,12 @@ class op2 : public ExpAst{
             rightExpAst->print(0);
             cout<<")";
         }
+
+        int labelcalc(bool left){
+            label = leftExpAst->labelcalc(true);
+            label = computelabel(label, rightExpAst->labelcalc(false));
+            return label;
+        }
 };
 
 class op1 : public ExpAst{
@@ -417,6 +501,8 @@ class op1 : public ExpAst{
         string type="?";
 
     public:
+        int label = -1;
+
         op1(string ope, ExpAst *singleExp): op(ope), singleExpAst(singleExp){}
 	    
         string getType(){
@@ -444,6 +530,11 @@ class op1 : public ExpAst{
 	        singleExpAst->print(0);
             cout<<")";
 	    }
+
+        int labelcalc(bool left){
+            label = singleExpAst->labelcalc(true);
+            return label;
+        }
 };
 
 class FUNCALL : public ExpAst{
