@@ -1,27 +1,53 @@
+void f()
+{
+	pushi(ebp); // Setting dynamic link
+	move(esp,ebp); // Setting dynamic link
+e:  loadi(ind(ebp), ebp); // restoring dynamic link
+	popi(1); //pop stack
+	return; //return
+}
+
 void main()
 {
-loadi(ind(ebp,-4), eax);
-	expast dummy gen code
-loadi(ind(ebp,-8), eax);
-	expast dummy gen code
-loadi(ind(ebp,-12), eax);
-	expast dummy gen code
-loadi(ind(ebp,-16), eax);
-	expast dummy gen code
-move(2,eax);
-muli(-20,eax);
-pushi(eax);
-move(3,eax);
-muli(-4,eax);
-pushi(eax);
-move(-20,eax);
-loadi(ind(esp),ebx);
-addi(ebx,eax);
-popi(1);
-loadi(ind(esp),ebx);
-addi(ebx,eax);
-popi(1);
-loadf(ind(ebp,eax),eax);
+	move(4,eax);
+	intTofloat(eax);
+	loadf(ind(ebp,-8), eax);
+
+
+	loadf(ind(ebp,-12), eax);
+
+
+	loadf(ind(ebp,-8), eax);
+	loadf(ind(ebp,-12), ebx);
+	mulf(-1.0,ebx);
+	addf(ebx,eax);
+	loadf(ind(ebp,-4), eax);
+
+
+	print_string("Value of x is :: ");
+	loadf(ind(ebp,-4), eax);
+	print_float(eax);
+	print_char('\n');
+
+
+
+
+	print_string("Value of y is :: ");
+	loadf(ind(ebp,-8), eax);
+	print_float(eax);
+	print_char('\n');
+
+
+
+
+	print_string("Value of z is :: ");
+	loadf(ind(ebp,-12), eax);
+	print_float(eax);
+	print_char('\n');
+
+
+
+
 	return; //return
 }
 

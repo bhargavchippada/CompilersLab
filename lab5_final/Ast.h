@@ -65,6 +65,7 @@ class ExpAst : public abstract_astnode {
         cerr<<"Error! default validation"<<endl;
     }
 
+
     virtual bool isConstant(){
         return false;
     }
@@ -75,7 +76,7 @@ class ExpAst : public abstract_astnode {
     }
 
     virtual void genCode(){
-        gencode("\texpast dummy gen code");
+        gencode("\t\texpast dummy gen code");
     }
 };
 
@@ -91,7 +92,7 @@ class StmtAst : public abstract_astnode {
     }
 
     virtual void genCode(){
-        gencode("\tstmtast dummy gen code");
+        gencode("\t\tstmtast dummy gen code");
     }
 };
 
@@ -138,7 +139,7 @@ class INTCONST : public ExpAst {
     int labelcalc(bool left){
         if(left) {
             label = 1;
-            // gencode("move("+to_string(Num)+","+reghandler->topstack()+");");
+            // gencode("\tmove("+to_string(Num)+","+reghandler->topstack()+");");
         }
         else {
             label = 0;
@@ -149,7 +150,7 @@ class INTCONST : public ExpAst {
 
     void genCode(){
         if(label == 1) {
-            gencode("move("+to_string(Num)+","+reghandler->topstack()+");");
+            gencode("\tmove("+to_string(Num)+","+reghandler->topstack()+");");
         }
     }
 
@@ -198,7 +199,7 @@ class FLOATCONST : public ExpAst {
     int labelcalc(bool left){
         if(left) {
             label = 1;
-            // gencode("move("+to_string(Num)+","+reghandler->topstack()+");");
+            // gencode("\tmove("+to_string(Num)+","+reghandler->topstack()+");");
         }
         else label = 0;
         
@@ -207,7 +208,7 @@ class FLOATCONST : public ExpAst {
 
     void genCode(){
         if(label == 1) {
-            gencode("move("+to_string(Num)+","+reghandler->topstack()+");");
+            gencode("\tmove("+to_string(Num)+","+reghandler->topstack()+");");
         }
     }
 };
@@ -440,19 +441,19 @@ class ArrayRef : public ExpAst {
 
             (*it)->genCode();   // assuming the value is in eax
 
-            gencode("muli(-"+to_string(prod)+","+reghandler->topstack()+");");
+            gencode("\tmuli(-"+to_string(prod)+","+reghandler->topstack()+");");
         
-            gencode("pushi(" + reghandler->topstack() + ");");
+            gencode("\tpushi(" + reghandler->topstack() + ");");
 
             i++;
         }
 
-        gencode("move(" + to_string(offset) + "," + reghandler->topstack()+");");
+        gencode("\tmove(" + to_string(offset) + "," + reghandler->topstack()+");");
         string regtop = reghandler->pop();
         for (list<ExpAst*>::iterator it = expAstList->begin(); it != expAstList->end(); it++){
-            gencode("loadi(ind(esp)," + reghandler->topstack()+");");
-            gencode("addi("+reghandler->topstack() + "," + regtop + ");");
-            gencode("popi(1);");
+            gencode("\tloadi(ind(esp)," + reghandler->topstack()+");");
+            gencode("\taddi("+reghandler->topstack() + "," + regtop + ");");
+            gencode("\tpopi(1);");
         }
 
         reghandler->push(regtop);
@@ -464,16 +465,16 @@ class ArrayRef : public ExpAst {
         int x = getOffset();
         if (x == 1){
             if (type == "INT")
-                gencode("loadi(ind(ebp," + reghandler->topstack() + ")," + reghandler->topstack()  + ");");
+                gencode("\tloadi(ind(ebp," + reghandler->topstack() + ")," + reghandler->topstack()  + ");");
             else
-                gencode("loadf(ind(ebp," + reghandler->topstack() + ")," + reghandler->topstack()  + ");");
+                gencode("\tloadf(ind(ebp," + reghandler->topstack() + ")," + reghandler->topstack()  + ");");
                 
         }
         else{
             if (type == "INT")
-                gencode("loadi(ind(ebp," + to_string(x)  + "), " + reghandler->topstack()  + ");");
+                gencode("\tloadi(ind(ebp," + to_string(x)  + "), " + reghandler->topstack()  + ");");
             else 
-                gencode("loadf(ind(ebp," + to_string(x)  + "), " + reghandler->topstack()  + ");");
+                gencode("\tloadf(ind(ebp," + to_string(x)  + "), " + reghandler->topstack()  + ");");
         }
     }
 };
@@ -514,10 +515,10 @@ class Cast : public ExpAst{
         void genCode(){
             singleExpAst->genCode();
             if (type == "INT"){
-                gencode("floatToint(" + reghandler->topstack() + ");");
+                gencode("\tfloatToint(" + reghandler->topstack() + ");");
             }
             if (type == "FLOAT"){
-               gencode("intTofloat(" + reghandler->topstack() + ");");
+               gencode("\tintTofloat(" + reghandler->topstack() + ");");
             }
         }
 };
@@ -601,6 +602,161 @@ class op2 : public ExpAst{
             
             return label;
         }
+
+        void genCode(){
+            int l1 = leftExpAst->label;
+            int l2 = rightExpAst->label;
+            int maxregs = reghandler->max_regs;
+
+            string topreg, secondreg;
+            if (l1 >= l2 && l1 < maxregs){
+                leftExpAst->genCode();
+                topreg = reghandler->pop();
+                rightExpAst->genCode();
+                secondreg = reghandler->topstack();
+                reghandler->push(topreg);
+            }
+            else if (l1 < l2 && l2 < maxregs){
+                reghandler->swap();
+                rightExpAst->genCode();
+                secondreg = reghandler->pop();
+                leftExpAst->genCode();
+                topreg = reghandler->topstack();
+                reghandler->push(secondreg);
+                reghandler->swap();
+            }
+
+            else{
+                rightExpAst->genCode();
+                if (rightExpAst->getType() == "INT")
+                    gencode("\tpushi(" + reghandler->topstack()  + ");");
+                else
+                    gencode("\tpushf(" + reghandler->topstack()  + ");");
+                leftExpAst->genCode();
+                topreg = reghandler->pop();
+                secondreg = reghandler->topstack();
+                reghandler->push(topreg);
+
+                if (rightExpAst->getType() == "INT"){
+                    gencode("\tloadi(ind(esp)," + secondreg  + ");");
+                    gencode("\tpopi(1);");
+                }
+                else{
+                    gencode("\tloadf(ind(esp)," + secondreg  + ");");
+                    gencode("\tpopf(1);");
+                }
+            }
+
+
+
+            if (op == "OR"){
+
+            }
+            else if (op == "AND"){
+
+            }
+            else if (op == "EQ_OP" || op == "NE_OP" || op == "LT" || op == "GT" || op == "LE_OP" || op == "GE_OP"){
+                string relFunc;
+                if (op == "EQ_OP")
+                    relFunc = "je";
+                else if (op == "NE_OP"){
+                    relFunc = "jne";
+                }
+                else if (op == "LT"){
+                    relFunc = "jl";
+                }
+                else if (op == "GT"){
+                    relFunc = "jg";
+                }
+                else if (op == "LE_OP"){
+                    relFunc = "jle";
+                }
+                else if (op == "GE_OP"){
+                    relFunc = "jge";
+                }
+
+                int currentLabel = globalLabel;
+                globalLabel++;
+
+                if (rightExpAst->isConstant()){
+                    if (leftExpAst->getType() == "INT")
+                        gencode("\tcmpi(" + to_string(((INTCONST*)rightExpAst)->evaluate()) + "," + topreg + ");"); // or addf ??
+                    else
+                        gencode("\tcmpf(" +to_string(((FLOATCONST*) rightExpAst)->evaluate()) + "," + topreg + ");"); // or addf ??
+                }
+                else{
+                    if (leftExpAst->getType() == "INT")
+                        gencode("\tcmpi(" + secondreg + "," + topreg + ");"); // or addf ??
+                    else
+                        gencode("\tcmpf(" + secondreg + "," + topreg + ");"); // or addf ??   
+                }
+                
+                gencode("\t" + relFunc + "(l" + to_string(currentLabel) + ");");
+                if (leftExpAst->getType() == "INT")
+                    gencode("\tmove(0," + topreg + ");");
+                else
+                    gencode("\tmove(0.000000," + topreg + ");");
+                gencode("\tj(e" + to_string(currentLabel) + ");");
+                gencode("\tl" + to_string(currentLabel) + ":");
+                if (leftExpAst->getType() == "INT")
+                    gencode("\tmove(1," + topreg + ");");
+                else
+                    gencode("\tmove(1.000000," + topreg + ");");
+                gencode("\te" + to_string(currentLabel) + ":");
+
+            }
+
+            else if (op == "PLUS" || op == "MULT" || op == "DIV"){
+                string aluop;
+                if (op == "PLUS"){
+                    aluop = "add";
+                }
+                else if (op == "MULT"){
+                    aluop = "mul";
+                }
+                else if (op == "DIV"){
+                    aluop = "div";
+                }
+
+                if (rightExpAst->isConstant()){
+                    if (leftExpAst->getType() == "INT")
+                        gencode("\t" + aluop + "i(" +to_string(((INTCONST*)rightExpAst)->evaluate()) + "," + topreg + ");"); // or addf ??
+                    else
+                        gencode("\t" + aluop + "f(" +to_string(((FLOATCONST*) rightExpAst)->evaluate()) + "," + topreg + ");"); // or addf ??
+                }
+                else{
+                    if (leftExpAst->getType() == "INT")
+                        gencode("\t" + aluop + "i(" + secondreg + "," + topreg + ");"); // or addf ??
+                    else
+                        gencode("\t" + aluop + "f(" + secondreg + "," + topreg + ");"); // or addf ??   
+                }
+            }
+
+            else if (op == "MINUS"){
+                if (rightExpAst->isConstant()){
+                    if (leftExpAst->getType() == "INT")
+                        gencode("\taddi(-" +to_string(((INTCONST*)rightExpAst)->evaluate()) + "," + topreg + ");"); // or addf ??
+                    else
+                        gencode("\taddf(-" +to_string(((FLOATCONST*) rightExpAst)->evaluate()) + "," + topreg + ");"); // or addf ??
+                }
+                else{
+                    if (leftExpAst->getType() == "INT"){
+                        gencode("\tmuli(-1," + secondreg + ");"); // or addf ??
+                        gencode("\taddi(" + secondreg + "," + topreg + ");"); // or addf ??
+                    }
+                    else{
+                        gencode("\tmulf(-1.0," + secondreg + ");"); // or addf ??
+                        gencode("\taddf(" + secondreg + "," + topreg + ");"); // or addf ??   
+                    }
+                }
+            }
+
+            else if (op == "ASSIGN"){
+
+            }
+
+        }
+
 };
 
 class op1 : public ExpAst{
@@ -646,8 +802,26 @@ class op1 : public ExpAst{
         }
 
         void genCode(){
-            if (){
-                
+
+            singleExpAst->genCode();
+            if (op == "NOT"){
+                int currentLabel = globalLabel;
+                globalLabel++;
+                gencode("\tcmpi(0," + reghandler->topstack() + ");");
+                gencode("\tjne(l" + to_string(currentLabel) + ");");
+                gencode("\tmove(0," + reghandler->topstack() + ");");
+                gencode("\tj(e" + to_string(currentLabel) + ");");
+                gencode("\tl" + to_string(currentLabel) + ":");
+                gencode("\tmove(1," + reghandler->topstack() + ");");
+                gencode("\te" + to_string(currentLabel) + ":");
+            }
+            else if (op == "UMINUS"){
+                if (type == "INT"){
+                    gencode("\tmuli(-1," + reghandler->topstack() + ");");
+                }
+                else{
+                    gencode("\tmulf(-1," + reghandler->topstack() + ");");
+                }
             }
         }
 };
@@ -745,6 +919,11 @@ class FUNCALL : public ExpAst{
 			}
             cout<<"})";
 		}
+
+        void genCode(){
+
+        }
+
 };
 
 class BlockStmt : public StmtAst{
@@ -768,6 +947,7 @@ class BlockStmt : public StmtAst{
         void genCode(){
             for (list<StmtAst*>::iterator it = stmtSequence->begin(); it != stmtSequence->end();){
                 (*it)->genCode();
+                gencode("\n");
                 it++;
             }
         }
@@ -952,5 +1132,136 @@ class ForStmt : public StmtAst{
             for3ExpAst->labelcalc(false);
         }
 };
+
+class FuncallStmt : public StmtAst{
+    protected:
+        IDENTIFIERAST *funcName;
+        list<ExpAst*> *expSequence;
+        string type;
+    
+    public:
+        FuncallStmt(IDENTIFIERAST *iden){
+            funcName=iden;
+            expSequence = new list<ExpAst*>();
+        }
+
+        void addExpAstList(list<ExpAst*> *expastlist){
+            expSequence=expastlist;
+        }
+
+        string getType(){
+            return type;
+        }
+
+        bool validate(){
+            string varName = funcName->getId();
+
+            entity* ent = localtable->findFunctionInScope(varName); 
+            entity *entVar = localtable->findInScope(varName,"var");
+            
+            if (entVar != NULL){
+                cerr<<"Error! Cannot be used as a function: "+ varName<<endl;
+                return false;
+            }
+            else if(ent == NULL){
+                if (varName == "printf")
+                    return true;
+                cerr<<"Error! No matching function with the given no of parameters: "+varName<<endl;
+                return false;
+            }
+            else{
+                symbTable *func = ent->funcPtr;
+                type = func->returntype;
+
+                list<ExpAst*>::iterator it = expSequence->begin();
+                int i;
+                for(i=0; i<func->numofparams && it != expSequence->end(); i++){
+                    string ltype = func->symtable[i]->type;
+                    string rtype = (*it)->getType();
+                    if(ltype=="INT" && rtype=="INT");
+                    else if(ltype=="FLOAT" && rtype=="FLOAT");
+                    else if(ltype=="INT" && rtype=="FLOAT"){
+                        //type cast right expast to int
+                        Cast *cast = new Cast("INT",(*it));
+                        (*it) = cast;
+                    }else if(ltype=="FLOAT" && rtype=="INT"){
+                        //type cast right expast
+                        Cast *cast = new Cast("FLOAT",*it);
+                        *it = cast;
+                    }else{
+                        cerr<<"Error! Type mismatch for parameter "<<(i+1)<<" of the function "+funcName->getExpStr()<<endl;
+                        return false;
+                    }
+
+                    it++;
+                }
+
+                if (i != func->numofparams or it != expSequence->end()){
+                    cerr << "Incorrect no. of parameters: " + varName << endl;
+                    return false;
+                }
+
+                
+                return true;
+            }
+        }
+
+        string getExpStr(){
+            string expstr="(FuncallStmt "+funcName->getExpStr()+"{";
+            for (list<ExpAst*>::iterator it = expSequence->begin(); it != expSequence->end();){
+                expstr+=(*it)->getExpStr();
+                it++;
+                if(it != expSequence->end()) expstr+=",";
+            }
+            expstr+="}";
+            return expstr;
+        }
+
+        void print(int level){
+            cout<<string(level, ' ')<<"(FuncallStmt ";
+            funcName->print(0);
+            cout<<"{";
+            for (list<ExpAst*>::iterator it = expSequence->begin(); it != expSequence->end();){
+                (*it)->print(0);
+                it++;
+                if(it != expSequence->end()) cout<<",";
+            }
+            cout<<"})";
+        }
+
+        void genCode(){
+            string varName = funcName->getId();
+            if (varName == "printf"){
+
+                for (list<ExpAst*>::iterator it = expSequence->begin(); it != expSequence->end(); it++){
+                    if ((*it)->getType() == "STRING"){
+                        gencode("\tprint_string(" + ((STRINGCONST*) (*it))->evaluate() + ");");
+                    }
+                    else if ((*it)->isConstant()){
+                        if ((*it)->getType() == "INT"){
+                            gencode("\tprint_int(" + to_string(((INTCONST*) (*it))->evaluate()) + ");");
+                        }                        
+                    
+
+                        else if ((*it)->getType() == "FLOAT"){
+                            gencode("\tprint_float(" + to_string(((FLOATCONST*) (*it))->evaluate()) + ");");
+                        }
+                    }
+                    else{
+                        (*it)->genCode();
+                        if ((*it)->getType() == "INT"){
+                            gencode("\tprint_int(" + reghandler->topstack() + ");");
+                        }                        
+
+                        else if ((*it)->getType() == "FLOAT"){
+                            gencode("\tprint_float(" + reghandler->topstack() + ");");
+                        }
+                    }
+                }
+                gencode("\tprint_char('\\n');");           
+            }
+        }
+};
+
 
 #endif

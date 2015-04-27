@@ -228,6 +228,21 @@ statement
     if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
+  | IDENTIFIER '(' ')'
+  {
+
+
+    $$ = new FuncallStmt(new IDENTIFIERAST($1));
+    if(!(((FuncallStmt*) $$)->validate())) {cerr<<"line number: "<<lineno<<endl; ABORT();}
+    //($$)->print(0);std::cout<<std::endl;
+  }
+  | IDENTIFIER '(' expression_list ')'
+  {
+    $$ = new FuncallStmt(new IDENTIFIERAST($1));
+    ((FuncallStmt*) $$)->addExpAstList($3);
+    if(!(((FuncallStmt*) $$)->validate())) {cerr<<"line number: "<<lineno<<endl; ABORT();}
+    //($$)->print(0);std::cout<<std::endl;
+  }
   ;
 
 assignment_statement
