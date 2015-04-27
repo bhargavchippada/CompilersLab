@@ -41,6 +41,24 @@ struct regHandler{
 		return regs.top();
 	}
 
+	string pop(){
+		if(regs.size()==0) {
+			cerr<<"registers stack empty!"<<endl;
+			return "NULL";
+		}
+		string s = regs.top();
+		regs.pop();
+		return s;
+	}
+
+	void push(string s){
+		regs.push(s);
+	}
+
+	int size(){
+		return regs.size();
+	}
+
 };
 
 

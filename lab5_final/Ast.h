@@ -9,6 +9,8 @@
 #include <list>
 #include <vector>
 #include <fstream>
+#include <iomanip>
+
 using namespace std;
 
 #define I 4
@@ -134,11 +136,23 @@ class INTCONST : public ExpAst {
     }
 
     int labelcalc(bool left){
-        if(left) label = 1;
-        else label = 0;
-        gencode(to_string(label));
+        if(left) {
+            label = 1;
+            // gencode("move("+to_string(Num)+","+reghandler->topstack()+");");
+        }
+        else {
+            label = 0;
+        }
+        
         return label;
     }
+
+    void genCode(){
+        if(label == 1) {
+            gencode("move("+to_string(Num)+","+reghandler->topstack()+");");
+        }
+    }
+
 };
 
 class FLOATCONST : public ExpAst {
@@ -182,10 +196,19 @@ class FLOATCONST : public ExpAst {
     }
 
     int labelcalc(bool left){
-        if(left) label = 1;
+        if(left) {
+            label = 1;
+            // gencode("move("+to_string(Num)+","+reghandler->topstack()+");");
+        }
         else label = 0;
-        gencode(to_string(label));
+        
         return label;
+    }
+
+    void genCode(){
+        if(label == 1) {
+            gencode("move("+to_string(Num)+","+reghandler->topstack()+");");
+        }
     }
 };
 
@@ -232,7 +255,7 @@ class STRINGCONST : public ExpAst {
     int labelcalc(bool left){
         if(left) label = 1;
         else label = 0;
-        gencode(to_string(label));
+        
         return label;
     }
 };
@@ -287,7 +310,7 @@ class IDENTIFIERAST : public ExpAst {
 
     int labelcalc(bool left){
        label = 1;
-       gencode(to_string(label));
+       
        return label;
     }
 };
@@ -377,8 +400,81 @@ class ArrayRef : public ExpAst {
         for (list<ExpAst*>::iterator it = expAstList->begin(); it != expAstList->end(); it++){
             label = computelabel(label, (*it)->labelcalc(true));
         }
-        gencode(to_string(label));
+        
         return label;
+    }
+
+    int getOffset(){
+        string varName = identifier->getId();
+        entity *ent = localtable->findInScope(varName,"var");
+        
+        int offset = ent->offset;
+        
+        if (type == "INT"){
+            offset = (offset >= 0 ? -offset - I : -offset);  // + I for ebp, -I beccause higher to lower addr stack
+        }
+        else if (type == "FLOAT"){
+            offset = (offset >= 0 ? -offset - F : -offset + I - F);
+        }
+
+        if (ent->dimensions.size() == 0) {  // or expAstList->size() == 0
+            return offset;
+        }
+
+        int prod = 1;
+        for (int i = 0; i < ent->dimensions.size(); i++){
+            prod = prod * ent->dimensions[i];
+        }
+
+        if (type == "INT"){
+            prod *= I;  // + I for ebp, -I beccause higher to lower addr stack
+        }
+        else if (type == "FLOAT"){
+            prod *= F;
+        }
+
+        int i = 0;
+        for (list<ExpAst*>::iterator it = expAstList->begin(); it != expAstList->end(); it++)
+        {
+            prod /= (ent->dimensions[i]);
+
+            (*it)->genCode();   // assuming the value is in eax
+
+            gencode("muli(-"+to_string(prod)+","+reghandler->topstack()+");");
+        
+            gencode("pushi(" + reghandler->topstack() + ");");
+
+            i++;
+        }
+
+        gencode("move(" + to_string(offset) + "," + reghandler->topstack()+");");
+        string regtop = reghandler->pop();
+        for (list<ExpAst*>::iterator it = expAstList->begin(); it != expAstList->end(); it++){
+            gencode("loadi(ind(esp)," + reghandler->topstack()+");");
+            gencode("addi("+reghandler->topstack() + "," + regtop + ");");
+            gencode("popi(1);");
+        }
+
+        reghandler->push(regtop);
+
+        return 1;  // means it's not a constant offset i.e. present in ebx
+    }
+
+    void genCode(){
+        int x = getOffset();
+        if (x == 1){
+            if (type == "INT")
+                gencode("loadi(ind(ebp," + reghandler->topstack() + ")," + reghandler->topstack()  + ");");
+            else
+                gencode("loadf(ind(ebp," + reghandler->topstack() + ")," + reghandler->topstack()  + ");");
+                
+        }
+        else{
+            if (type == "INT")
+                gencode("loadi(ind(ebp," + to_string(x)  + "), " + reghandler->topstack()  + ");");
+            else 
+                gencode("loadf(ind(ebp," + to_string(x)  + "), " + reghandler->topstack()  + ");");
+        }
     }
 };
 
@@ -411,7 +507,7 @@ class Cast : public ExpAst{
 
         int labelcalc(bool left){
             label = singleExpAst->labelcalc(true);
-            gencode(to_string(label));
+            
             return label;
         }
 };
@@ -492,7 +588,7 @@ class op2 : public ExpAst{
         int labelcalc(bool left){
             label = leftExpAst->labelcalc(true);
             label = computelabel(label, rightExpAst->labelcalc(false));
-            gencode(to_string(label));
+            
             return label;
         }
 };
@@ -536,7 +632,7 @@ class op1 : public ExpAst{
 
         int labelcalc(bool left){
             label = singleExpAst->labelcalc(true);
-            gencode(to_string(label));
+            
             
             return label;
         }
@@ -750,6 +846,9 @@ class AssStmt : public StmtAst{
         void genCode(){
             rightExpAst->labelcalc(false);
             leftExpAst->labelcalc(false);
+
+            rightExpAst->genCode();
+            leftExpAst->genCode();
         }
 };
 
