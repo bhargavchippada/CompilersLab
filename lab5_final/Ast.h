@@ -21,6 +21,7 @@ namespace // anonymous
     string varType;
     int globalLabel = 1;
     vector<string> goblcodearray;
+
     symbTable *gobltable = new symbTable("gobl", NULL);
     symbTable *localtable = new symbTable("temp", gobltable);
     bool exitcode = false;
@@ -129,13 +130,13 @@ class INTCONST : public ExpAst {
     }
 
     void print(int level){
-    	cout<<string(level, ' ')<<"(IntConst "<<Num<<")";
+    	cout<<string(level, ' ')<<"(IntConst_"<<label<<" "<<Num<<")";
     }
 
     int labelcalc(bool left){
         if(left) label = 1;
         else label = 0;
-
+        gencode(to_string(label));
         return label;
     }
 };
@@ -177,13 +178,13 @@ class FLOATCONST : public ExpAst {
     }
 
     void print(int level){
-        cout<<string(level, ' ')<<"(FloatConst "<<Num<<")";
+        cout<<string(level, ' ')<<"(FloatConst_"<<label<<" "<<Num<<")";
     }
 
     int labelcalc(bool left){
         if(left) label = 1;
         else label = 0;
-
+        gencode(to_string(label));
         return label;
     }
 };
@@ -225,13 +226,13 @@ class STRINGCONST : public ExpAst {
     }
 
     void print(int level){
-        cout<<string(level, ' ')<<"(StringConst "<<strlit<<")";
+        cout<<string(level, ' ')<<"(StringConst_"<<label<<" "<<strlit<<")";
     }
 
     int labelcalc(bool left){
         if(left) label = 1;
         else label = 0;
-
+        gencode(to_string(label));
         return label;
     }
 };
@@ -281,12 +282,12 @@ class IDENTIFIERAST : public ExpAst {
     }
 
     void print(int level){
-        cout<<string(level, ' ')<<"(Id \""<<identifier<<"\")";
+        cout<<string(level, ' ')<<"(Id_"<<label<<" \""<<identifier<<"\")";
     }
 
     int labelcalc(bool left){
        label = 1;
-
+       gencode(to_string(label));
        return label;
     }
 };
@@ -358,7 +359,7 @@ class ArrayRef : public ExpAst {
         if(expAstList->size()==0){
             identifier->print(level);
         }else{
-            cout<<string(level, ' ')<<"(ArrayRef ";
+            cout<<string(level, ' ')<<"(ArrayRef_"<<label<<" ";
             identifier->print(0);
             for (list<ExpAst*>::iterator it = expAstList->begin(); it != expAstList->end(); it++){
                 cout<<"[";
@@ -374,9 +375,9 @@ class ArrayRef : public ExpAst {
         label = identifier->labelcalc(true);
 
         for (list<ExpAst*>::iterator it = expAstList->begin(); it != expAstList->end(); it++){
-            label = computelabel(label, (*it)->labelcalc(false));
+            label = computelabel(label, (*it)->labelcalc(true));
         }
-
+        gencode(to_string(label));
         return label;
     }
 };
@@ -403,13 +404,14 @@ class Cast : public ExpAst{
         }
 
         void print(int level){
-            cout<<string(level, ' ')<<"(TO_"<<type<<" ";
+            cout<<string(level, ' ')<<"(TO_"<<type<<"_"<<label<<" ";
             singleExpAst->print(0);
             cout<<")";
         }
 
         int labelcalc(bool left){
             label = singleExpAst->labelcalc(true);
+            gencode(to_string(label));
             return label;
         }
 };
@@ -480,7 +482,7 @@ class op2 : public ExpAst{
             string ptype="";
             if(op!="ASSIGN") ptype= "_"+type;
             else ptype= "_"+leftExpAst->getType();
-            cout<<string(level, ' ')<<"("<<op<<ptype<<" ";
+            cout<<string(level, ' ')<<"("<<op<<ptype<<"_"<<label<<" ";
             leftExpAst->print(0);
             cout<<" ";
             rightExpAst->print(0);
@@ -490,6 +492,7 @@ class op2 : public ExpAst{
         int labelcalc(bool left){
             label = leftExpAst->labelcalc(true);
             label = computelabel(label, rightExpAst->labelcalc(false));
+            gencode(to_string(label));
             return label;
         }
 };
@@ -526,13 +529,15 @@ class op1 : public ExpAst{
         }
 
 	    void print(int level){
-	        cout<<string(level, ' ')<<"("<<op<<"_"<<type<<" ";
+	        cout<<string(level, ' ')<<"("<<op<<"_"<<type<<"_"<<label<<" ";
 	        singleExpAst->print(0);
             cout<<")";
 	    }
 
         int labelcalc(bool left){
             label = singleExpAst->labelcalc(true);
+            gencode(to_string(label));
+            
             return label;
         }
 };
@@ -698,6 +703,11 @@ class ReturnStmt : public StmtAst{
             returnExp->print(0);
             cout<<")";
         }
+
+        void genCode(){
+            returnExp->labelcalc(false);
+        }
+
 };
 
 class AssStmt : public StmtAst{
@@ -736,6 +746,11 @@ class AssStmt : public StmtAst{
             rightExpAst->print(0);
             cout<<")";
         }
+
+        void genCode(){
+            rightExpAst->labelcalc(false);
+            leftExpAst->labelcalc(false);
+        }
 };
 
 class IfStmt : public StmtAst{
@@ -755,6 +770,10 @@ class IfStmt : public StmtAst{
             cout<<endl;
             elseStmtAst->print(level+4);
             cout<<")";
+        }
+
+        void genCode(){
+            ifExpAst->labelcalc(false);
         }
 };
 
@@ -786,6 +805,10 @@ class WhileStmt : public StmtAst{
             thenStmtAst->print(level+7);
             cout<<")";
         }
+
+        void genCode(){
+            whileExpAst->labelcalc(false);
+        }
 };
 
 class ForStmt : public StmtAst{
@@ -808,6 +831,12 @@ class ForStmt : public StmtAst{
             cout<<endl;
             thenStmtAst->print(level+5);
             cout<<")";
+        }
+
+        void genCode(){
+            for1ExpAst->labelcalc(false);
+            for2ExpAst->labelcalc(false);
+            for3ExpAst->labelcalc(false);
         }
 };
 

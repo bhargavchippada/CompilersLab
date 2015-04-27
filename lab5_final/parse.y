@@ -33,7 +33,7 @@ code_unit
     }
     cerr<<"Parsing is successful"<<endl;
 
-    for(int i=0; i<goblcodearray.size(); i++) outputFile << goblcodearray[i]+"\n";
+    for(int i=0; i<goblcodearray.size(); i++) outputFile << "" << goblcodearray[i]+"\n";
 
   }
   ;
@@ -62,7 +62,7 @@ function_definition
 
     BlockStmt* blockstmt = (BlockStmt*) $3;
     // we have everything related to a function
-    blockstmt->print(0);std::cout<<std::endl<<std::endl;
+    
     // genCode();
     gencode("void " + localtableTemp->tablename + "()");
     gencode("{");
@@ -73,6 +73,7 @@ function_definition
     }
     
     blockstmt->genCode();
+    blockstmt->print(0);std::cout<<std::endl<<std::endl;
 
     if (localtableTemp->tablename != "main"){
       gencode("e:  loadi(ind(ebp), ebp); // restoring dynamic link");
