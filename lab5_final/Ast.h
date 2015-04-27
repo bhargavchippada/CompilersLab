@@ -510,6 +510,16 @@ class Cast : public ExpAst{
             
             return label;
         }
+
+        void genCode(){
+            singleExpAst->genCode();
+            if (type == "INT"){
+                gencode("floatToint(" + reghandler->topstack() + ");");
+            }
+            if (type == "FLOAT"){
+               gencode("intTofloat(" + reghandler->topstack() + ");");
+            }
+        }
 };
 
 class op2 : public ExpAst{
@@ -632,9 +642,13 @@ class op1 : public ExpAst{
 
         int labelcalc(bool left){
             label = singleExpAst->labelcalc(true);
-            
-            
             return label;
+        }
+
+        void genCode(){
+            if (){
+                
+            }
         }
 };
 
