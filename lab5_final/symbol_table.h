@@ -23,18 +23,18 @@ struct regHandler{
 	int max_regs;
 
 	regHandler(){
-		max_regs = 2;
-		//regs.push("esi");
-		//regs.push("edi");
-		//regs.push("edx");
-		//regs.push("ecx");
-		regs.push("ebx");
-		regs.push("eax");
-		regdesp["ebx"] = "NULL";
-		regdesp["eax"] = "NULL";
-
+		max_regs = 6;
+		allregs.push_back("esi");
+		allregs.push_back("edi");
+		allregs.push_back("edx");
+		allregs.push_back("ecx");
 		allregs.push_back("ebx");
 		allregs.push_back("eax");
+
+		for(int i=0; i<max_regs; i++){
+			regdesp[allregs[i]] = "NULL";
+			regs.push(allregs[i]);
+		}
 	}
 
 	string topstack(){

@@ -85,13 +85,10 @@ void f()
 	storei(5, ind(ebp, -8));
 
 
-	loadi(ind(ebp,8), eax);
-	pushi(eax);
 	loadi(ind(ebp,4), eax);
 	loadi(ind(ebp,8), ebx);
 	muli(ebx,eax);
-	loadi(ind(esp),ebx);
-	popi(1);
+	loadi(ind(ebp,8), ebx);
 	muli(ebx,eax);
 	storei(eax, ind(ebp, -4));
 
@@ -154,44 +151,38 @@ void main()
 	addi(-100,esp); // making space for locals
 	move(1.500000,eax);
 	floatToint(eax);
-	pushi(eax);
-	move(1,eax);
-	muli(-20,eax);
-	pushi(eax);
-	move(1,eax);
-	muli(-4,eax);
-	pushi(eax);
-	move(-20,eax);
-	loadi(ind(esp),ebx);
-	addi(ebx,eax);
+	move(1,ebx);
+	muli(-20,ebx);
+	pushi(ebx);
+	move(1,ebx);
+	muli(-4,ebx);
+	pushi(ebx);
+	move(-20,ebx);
+	loadi(ind(esp),ecx);
+	addi(ecx,ebx);
 	popi(1);
-	loadi(ind(esp),ebx);
-	addi(ebx,eax);
+	loadi(ind(esp),ecx);
+	addi(ecx,ebx);
 	popi(1);
-	loadi(ind(esp),ebx);
-	popi(1);
-	storei(ebx, ind(ebp, eax));
+	storei(eax, ind(ebp, ebx));
 
 
 	move(1.600000,eax);
 	floatToint(eax);
-	pushi(eax);
-	move(3,eax);
-	muli(-20,eax);
-	pushi(eax);
-	move(3,eax);
-	muli(-4,eax);
-	pushi(eax);
-	move(-20,eax);
-	loadi(ind(esp),ebx);
-	addi(ebx,eax);
+	move(3,ebx);
+	muli(-20,ebx);
+	pushi(ebx);
+	move(3,ebx);
+	muli(-4,ebx);
+	pushi(ebx);
+	move(-20,ebx);
+	loadi(ind(esp),ecx);
+	addi(ecx,ebx);
 	popi(1);
-	loadi(ind(esp),ebx);
-	addi(ebx,eax);
+	loadi(ind(esp),ecx);
+	addi(ecx,ebx);
 	popi(1);
-	loadi(ind(esp),ebx);
-	popi(1);
-	storei(ebx, ind(ebp, eax));
+	storei(eax, ind(ebp, ebx));
 
 
 	print_string("fact(3) :: ");
@@ -247,8 +238,6 @@ void main()
 	storef(eax, ind(ebp, -100));
 
 
-	loadi(ind(ebp,-12), eax);
-	pushi(eax);
 	loadi(ind(ebp,-8), eax);
 	pushi(eax);
 
@@ -268,8 +257,7 @@ void main()
 	popi(1); // Clean up return value
 
 	muli(ebx,eax);
-	loadi(ind(esp),ebx);
-	popi(1);
+	loadi(ind(ebp,-12), ebx);
 	muli(ebx,eax);
 	storei(eax, ind(ebp, -4));
 
@@ -284,12 +272,9 @@ void main()
 	loadi(ind(ebp,-4), eax);
 	addi(1,eax);
 	storei(eax,ind(ebp,-4));
-	pushi(eax);
-	loadi(ind(ebp,-4), eax);
-	addi(1,eax);
-	storei(eax,ind(ebp,-4));
-	loadi(ind(esp),ebx);
-	popi(1);
+	loadi(ind(ebp,-4), ebx);
+	addi(1,ebx);
+	storei(ebx,ind(ebp,-4));
 	addi(ebx,eax);
 	print_int(eax);
 	print_char('\n');
@@ -315,25 +300,22 @@ void main()
 	loadi(ind(ebp,ebx), eax);
 	addi(1,eax);
 	storei(eax,ind(ebp,ebx));
-	pushi(eax);
-	move(3,ebx);
-	muli(-20,ebx);
-	pushi(ebx);
-	move(3,ebx);
-	muli(-4,ebx);
-	pushi(ebx);
-	move(-20,ebx);
-	loadi(ind(esp),eax);
-	addi(eax,ebx);
-	popi(1);
-	loadi(ind(esp),eax);
-	addi(eax,ebx);
-	popi(1);
-	loadi(ind(ebp,ebx), eax);
-	addi(1,eax);
-	storei(eax,ind(ebp,ebx));
+	move(3,ecx);
+	muli(-20,ecx);
+	pushi(ecx);
+	move(3,ecx);
+	muli(-4,ecx);
+	pushi(ecx);
+	move(-20,ecx);
 	loadi(ind(esp),ebx);
+	addi(ebx,ecx);
 	popi(1);
+	loadi(ind(esp),ebx);
+	addi(ebx,ecx);
+	popi(1);
+	loadi(ind(ebp,ecx), ebx);
+	addi(1,ebx);
+	storei(ebx,ind(ebp,ecx));
 	addi(ebx,eax);
 	print_int(eax);
 	print_char('\n');
