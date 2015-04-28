@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <stack>
+#include <map>
 
 using namespace std;
 
@@ -15,6 +16,9 @@ using namespace std;
 struct symbTable;
 
 struct regHandler{
+	vector<string> allregs;
+	map<string,string> regdesp;
+
 	stack<string> regs;
 	int max_regs;
 
@@ -26,6 +30,11 @@ struct regHandler{
 		//regs.push("ecx");
 		regs.push("ebx");
 		regs.push("eax");
+		regdesp["ebx"] = "NULL";
+		regdesp["eax"] = "NULL";
+
+		allregs.push_back("ebx");
+		allregs.push_back("eax");
 	}
 
 	string topstack(){
@@ -60,6 +69,8 @@ struct regHandler{
 		regs.push(top);
 		regs.push(second);
 	}
+
+	
 
 };
 

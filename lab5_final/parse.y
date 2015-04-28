@@ -57,8 +57,10 @@ function_definition
     symbTable *localtableTemp = new symbTable("temp", gobltable);
     *localtableTemp = *localtable;
 
-    int exitcode = gobltable->addEntity(localtableTemp->tablename,"fun", $1,false,   localtableTemp);
-    if (exitcode < 0) {cerr<<"line number: "<<lineno<<endl; ABORT();}
+    //int exitcode = gobltable->addEntity(localtableTemp->tablename,"fun", $1,false,   localtableTemp);
+    //if (exitcode < 0) {cerr<<"line number: "<<lineno<<endl; ABORT();}
+    entity* funcentity = gobltable->findFunctionInScope(localtableTemp->tablename);
+    funcentity->funcPtr = localtableTemp;
 
     BlockStmt* blockstmt = (BlockStmt*) $3;
     // we have everything related to a function
@@ -139,11 +141,15 @@ fun_declarator
   : IDENTIFIER '(' parameter_list ')' 
   {
     localtable->tablename = $1;
+    int exitcode = gobltable->addEntity($1,"fun", localtable->returntype,false, localtable);
+    if (exitcode < 0) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     isParam = false;
   }
   | IDENTIFIER '(' ')' 
   {
     localtable->tablename = $1;
+    int exitcode = gobltable->addEntity($1,"fun", localtable->returntype,false, localtable);
+    if (exitcode < 0) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     isParam = false;
   }
   ;

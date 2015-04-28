@@ -1,3 +1,9 @@
+
+int fact(int n){
+	if (n == 0) return 1;
+	else return n*fact(n-1);
+}
+
 int f(int a, int b, float c){
 	int x,y,z;
 
@@ -9,31 +15,17 @@ int f(int a, int b, float c){
 	x = (a*b*b); 
 	printf("Value of x in f is :: ", x);
 
-	x = y;
-	z = x > 6;
-	printf("Value of z in f is :: ", z);
-	z = x < 6;
-	printf("Value of z in f is :: ", z);
-	z = x >= 6;
-	printf("Value of z in f is :: ", z);
-	z = x <= 6;
-	printf("Value of z in f is :: ", z);
-	z = x == 6;
-	printf("Value of z in f is :: ", z);
-	z = x != 6;
-	printf("Value of z in f is :: ", z);
-	
 	// y = x == y;
 	// printf("Value of y in f is :: ", y);
 	
 	// y = x != y;
 	// printf("Value of y in f is :: ", y);
-	
-	return x > y;
+	z = x > y;
+	printf("Value of z in f is :: ", z);
+	return x < y;
 }
 
-int main()
-{
+int main(){
 	int x, y, z, w;
 	int p[4][5];
 	float t;
@@ -41,93 +33,41 @@ int main()
 	//y = 2.0;
 	//z = -1;
 	//w = 5.5;
-
+	// printf("flkgndljhpt");
 	p[1][1] = 1.5;
 	p[3][3] = 1.6;
+
+	printf("fact(3) :: ", fact(fact(3) + fact(2)));
 
 	x = 1;
 	y = 2;
 	z = 5;
 	t = 8;
 
-	t = 0;
-	y = 0;
-
-	y = x != y;
-	printf("Value of y in f is :: ", y);
-	x = 1.0 && 1;
+	x = y*f(1,1,1)*z;
 	printf("Value of x is :: ", x);
 
-	x = 1 && 1.0;
-	printf("Value of x is :: ", x);
+	if (x || 0)
+		z = 3;
+	else z = 4;
 
+	while(z > 0){
+		z = z-1;
+		printf("Value of z in loop is :: ", z);
+	}
 
-	x = 0.0 && 1.0;
-	printf("Value of x is :: ", x);
+	z = 0;
+	for (1; z < 5; 1){
+		z = z + 1;
+		y = 0;
+		while(y < z){
+			y = y+1;
+			printf("Value of y in while for loop is :: ", y);
+		}
+		printf("Value of z in loop is :: ", z);
+	}
 
-	x = 1.0 && 1.0;
-	printf("Value of x is :: ", x);
-
-	x = 6.0 && 6.0;
-	printf("Value of x is :: ", x);
-
-	x = 0 && z;
-	printf("Value of x is :: ", x);
-
-	x = z && 0;
-	printf("Value of x is :: ", x);
-
-	x = t && 6;
-	printf("Value of x is :: ", x);
-	
-	x =  6 && t;
-	printf("Value of x is :: ", x);
-
-	printf("Value of x idlfdhflkjl");
-
-	x = y || z;
-	printf("Value of x is :: ", x);
-
-	x = z || y;
-	printf("Value of x is :: ", x);
-
-	x = f(x, t, 6);
-	printf("Value of x after funcall is :: ", x);
-
-
-	p[1+1][2+1] = p[1+2][x+y]*x + y*y + z*z;
-
-	printf("Value of y is :: ", y);
-
-	p[0*(2*p[1][1]+3*p[1][1])][x+y] = ((p[1+1][x+y]*p[p[1][p[1][1]] + 2*p[1][1]][x+y])*(p[1+1][x+y]*p[1+1][x+y]))*p[1+1][x+y]*p[1+1][x+y];
-
-	y = 4;
-
-	printf("Value of y is :: ", y);
-
-	z = 867.4;
-
-	x = y - z;
-	printf("Value of y is :: ", y);
-
-	// x = !y;
-
-	// x = y == z;	
-
-	// x = y < z;
-	// x = y > z;
-	// x = y >= z;
-	// x = y <= z;
-	// x = y != z;
-
-	// x = y + z;
-	// x = y * z;
-	// x = y / z;]
-
-	x = p[3][3];
-
-
-	x = 0 || 0;
+	// z = 2;
 	printf("Value of x is :: ", x);
 	printf("Value of y is :: ", y);
 	printf("Value of p2,3 is :: ", p[2][3]);
@@ -135,13 +75,4 @@ int main()
 	printf("Value of p4,3 is :: ", p[4][3]);
 	printf("Value of z is :: ", z);
 	// printf("Value of p2,3 is :: ", p[2][3]);
-
-	/*
-	printf("fgkrfbgjkfg", 34);
-
-	x = !p[1][1];
-
-
-	p[2][3] = w;//p[x*w+z*(x+y+2)+x*y*z*w][x*w+z*(x+y+2)+x*y*z*w];
-	*/
 }

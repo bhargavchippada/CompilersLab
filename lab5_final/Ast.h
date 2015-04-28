@@ -41,6 +41,31 @@ namespace // anonymous
         else if(l1>l2) return l1;
         else return l2;
     }
+
+    pair<stack<string>, stack<string> > saveUsedRegisters(){
+        map<string, bool> present;
+        stack<string> tempStack = reghandler->regs, result;
+        for(int i=0; i< reghandler->size(); i++){
+            string s = tempStack.top();
+            tempStack.pop();
+            present[s] = true;
+        }
+        for(int i=0; i< reghandler->max_regs; i++){
+            if (present.find(reghandler->allregs[i]) == present.end()){
+                if (reghandler->regdesp[reghandler->allregs[i]] == "INT"){
+                    gencode("\tpushi("+ reghandler->allregs[i] +");");
+                    result.push("\tpopi(1);");
+                    result.push("\tloadi(ind(esp),"+ reghandler->allregs[i] +");");
+                }
+                else if (reghandler->regdesp[reghandler->allregs[i]] == "FLOAT"){
+                    gencode("\tpushf("+ reghandler->allregs[i] +");");
+                    result.push("\tpopf(1);");
+                    result.push("\tloadf(ind(esp),"+ reghandler->allregs[i] +");");
+                }
+            }
+        }
+        return make_pair(result, reghandler->regs);
+    }
 } 
 
 class ExpAst : public abstract_astnode {
@@ -157,6 +182,7 @@ class INTCONST : public ExpAst {
     void genCode(){
         if(label == 1) {
             gencode("\tmove("+to_string(Num)+","+reghandler->topstack()+");");
+            reghandler->regdesp[reghandler->topstack()] = getType();
         } //else it is evaluated using isConstant condition
     }
 
@@ -212,6 +238,7 @@ class FLOATCONST : public ExpAst {
     void genCode(){
         if(label == 1) {
             gencode("\tmove("+to_string(Num)+","+reghandler->topstack()+");");
+            reghandler->regdesp[reghandler->topstack()] = getType();
         }
     }
 };
@@ -468,6 +495,8 @@ class ArrayRef : public ExpAst {
         }
 
         reghandler->push(regtop);
+        reghandler->regdesp[reghandler->topstack()] = "INT";
+
 
         return 1;  // means it's not a constant offset i.e. present in ebx
     }
@@ -487,6 +516,7 @@ class ArrayRef : public ExpAst {
             else 
                 gencode("\tloadf(ind(ebp," + to_string(x)  + "), " + reghandler->topstack()  + ");");
         }
+        reghandler->regdesp[reghandler->topstack()] = getType();
     }
 };
 
@@ -537,6 +567,7 @@ class Cast : public ExpAst{
             if (type == "FLOAT"){
                gencode("\tintTofloat(" + reghandler->topstack() + ");");
             }
+            reghandler->regdesp[reghandler->topstack()] = getType();
         }
 };
 
@@ -840,7 +871,7 @@ class op2 : public ExpAst{
             else if (op == "ASSIGN"){
                 // need to implement
             }
-
+            reghandler->regdesp[reghandler->topstack()] = getType();
         }
 
 };
@@ -915,8 +946,17 @@ class op1 : public ExpAst{
                     gencode("\tmulf(-1," + reghandler->topstack() + ");");
                 }
             } else if (op == "PP"){
-                // need to implement
+                /*
+                if (type == "INT"){
+                    gencode("\taddi(1," + reghandler->topstack() + ");");
+                }
+                else{
+                    gencode("\taddf(1," + reghandler->topstack() + ");");
+                }
+                */
             }
+            reghandler->regdesp[reghandler->topstack()] = getType();
+
         }
 };
 
@@ -1026,12 +1066,23 @@ class FUNCALL : public ExpAst{
             for (list<ExpAst*>::iterator it = expSequence->begin(); it != expSequence->end(); it++){
                     (*it)->labelcalc(false);
             }
+            label = 1;
+            return 1;
         }
 
         void genCode(){
             // outputFile << "\t// funcallAST\n";
 
             // Push the return value
+
+
+            pair<stack<string>, stack<string> > savedregs = saveUsedRegisters();
+
+            while(!(reghandler->regs).empty()) (reghandler->regs).pop();
+
+            for (int i = 0; i < reghandler->max_regs; i++){
+                (reghandler->regs).push(reghandler->allregs[i]);
+            }
 
             gencode("\n\t // paramater loading :: " + funcName->getId() );
 
@@ -1097,6 +1148,13 @@ class FUNCALL : public ExpAst{
                 gencode("\tpopf(" + to_string(floatParams) + ");");
             }
 
+
+            while(!(savedregs.first).empty()){
+                gencode((savedregs.first).top());
+                (savedregs.first).pop();
+            }
+            reghandler->regs = savedregs.second;
+            
             // move return value into eax
             // Pop retrun value
             if (type == "INT"){
@@ -1107,6 +1165,9 @@ class FUNCALL : public ExpAst{
                 gencode("\tloadf(ind(esp)," + reghandler->topstack() + "); // receives the return value");
                 gencode("\tpopf(1); // Clean up return value\n");
             }
+
+            reghandler->regdesp[reghandler->topstack()] = getType();
+
         }
 
 };
@@ -1356,7 +1417,24 @@ class IfStmt : public StmtAst{
         }
 
         void genCode(){
+            gencode("\t// If Statement:");
+
+            int currentLabel = globalLabel;
+            globalLabel++;
+
+            ifExpAst->genCode();
+            gencode("\tcmpi(0, " + reghandler->topstack() + ");");
+            gencode("\tje(l" + to_string(currentLabel) + "); // Jump if not equal");
             
+            thenStmtAst->genCode();
+            gencode("\tj(e" + to_string(currentLabel) + ");");
+            
+            gencode("\tl" + to_string(currentLabel) + ":");
+
+
+            elseStmtAst->genCode();
+            gencode("\te" + to_string(currentLabel) + ":");
+
         }
 };
 
@@ -1372,7 +1450,7 @@ class emptyStmt : public StmtAst{
         }
 
         void genCode(){
-            
+            gencode("\t     //Empty Statement");
         }
 };
 
@@ -1396,9 +1474,25 @@ class WhileStmt : public StmtAst{
            whileExpAst->labelcalc(false);
            thenStmtAst->labelcalc();
         }
-
+        
         void genCode(){
+            gencode("\t// While Statement:");
+
+            int currentLabel = globalLabel;
+            globalLabel++;
+
+            gencode("\nl" + to_string(currentLabel) + ":");
+            whileExpAst->genCode();
+
+            gencode("\tcmpi(0, " + reghandler->topstack() + ");");
+            gencode("\tje(e" + to_string(currentLabel) + "); // Jump if not equal");
+
+            thenStmtAst->genCode();
+            gencode("\tj(l" + to_string(currentLabel) + "); // Jump if not equal");
             
+            gencode("\te" + to_string(currentLabel) + ":");
+
+
         }
 };
 
@@ -1432,6 +1526,26 @@ class ForStmt : public StmtAst{
         }
 
         void genCode(){
+
+            gencode("\t// For Statement:");
+
+            int currentLabel = globalLabel;
+            globalLabel++;
+
+            for1ExpAst->genCode();
+
+            gencode("\nl" + to_string(currentLabel) + ":");
+            for2ExpAst->genCode();
+
+            gencode("\tcmpi(0, " + reghandler->topstack() + ");");
+            gencode("\tje(e" + to_string(currentLabel) + "); // Jump if not equal");
+
+            thenStmtAst->genCode();
+            for3ExpAst->genCode();
+
+            gencode("\tj(l" + to_string(currentLabel) + "); // Jump if not equal");
+            
+            gencode("\te" + to_string(currentLabel) + ":");
         }
 };
 
@@ -1568,7 +1682,84 @@ class FuncallStmt : public StmtAst{
                     }
                 }
                 gencode("\tprint_char('\\n');");           
+                return;
             }
+
+            gencode("\n\t // paramater loading :: " + funcName->getId() );
+
+            if (type == "INT"){
+                gencode("\tpushi(0); //To make space in stack for return val");
+            } 
+            else if (type == "FLOAT"){
+                gencode("\tpushf(0); //To make space in stack for return val");
+            }
+
+            int floatParams = 0, intParams = 0;
+
+            entity* ent = localtable->findFunctionInScope(varName); 
+            symbTable *func = ent->funcPtr;
+
+            list<ExpAst*>::iterator it = expSequence->end();
+            int i = expSequence->size() - 1;
+
+            while(i >= 0){
+                it--;
+
+                string ltype = func->symtable[i]->type;
+                string rtype = (*it)->getType();
+
+                if ((*it)->isConstant()) {
+                
+                    if (ltype == "INT"){
+                        intParams++;
+                        gencode("\tpushi(" + to_string(((INTCONST*) (*it))->evaluate()) + "); // argument to fact");
+                    }
+                    if (ltype == "FLOAT"){
+                        floatParams++;
+                        gencode("\tpushf(" + to_string(((FLOATCONST*) (*it))->evaluate()) + "); // argument to fact");
+                    }
+                }
+                else{
+                    (*it)->genCode();
+                    // assuming the value to be in eax
+
+                    if (ltype == "INT"){
+                        intParams++;
+                        gencode("\tpushi(" + reghandler->topstack() + "); // argument to fact");
+                    }
+                    if (ltype == "FLOAT"){
+                        floatParams++;
+                        gencode("\tpushf(" + reghandler->topstack() + "); // argument to fact");
+                    }
+                }
+
+                i--;
+            }
+
+            // Function call ::
+
+            gencode("\t"+ varName + "();");
+
+            if (intParams > 0){
+                gencode("\tpopi(" + to_string(intParams) + ");");
+            }
+            
+            if (floatParams > 0){
+                gencode("\tpopf(" + to_string(floatParams) + ");");
+            }
+
+            // move return value into eax
+            // Pop retrun value
+            if (type == "INT"){
+                gencode("\tloadi(ind(esp)," + reghandler->topstack() + "); // receives the return value");
+                gencode("\tpopi(1); // Clean up return value\n");
+            } 
+            else if (type == "FLOAT"){
+                gencode("\tloadf(ind(esp)," + reghandler->topstack() + "); // receives the return value");
+                gencode("\tpopf(1); // Clean up return value\n");
+            }
+
+
         }
 };
 
