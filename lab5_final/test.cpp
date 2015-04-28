@@ -60,15 +60,13 @@ int main(){
 		printf("Value of z in loop is :: ", z);
 	}
 
-	z = 0;
-	for (1; z < 5; 1){
-		z = z + 1;
+	for (z = 3; z < 5; z++){
 		y = 0;
 		while(y < z){
 			y = y+1;
 			printf("Value of y in while for loop is :: ", y);
 		}
-		printf("Value of z in loop is :: ", z);
+		printf("Value of z in for is :: ", z);
 	}
 
 	// z = 2;

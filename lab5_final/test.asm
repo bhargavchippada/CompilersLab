@@ -393,10 +393,8 @@ l7:
 	e7:
 
 
-	storei(0, ind(ebp, -12));
-
-
 	// For Statement:
+	storei(3, ind(ebp, -12));
 
 l9:
 	loadi(ind(ebp,-12), eax);
@@ -409,11 +407,6 @@ l9:
 	e10:
 	cmpi(0, eax);
 	je(e9); // Jump if not equal
-	loadi(ind(ebp,-12), eax);
-	addi(1,eax);
-	storei(eax, ind(ebp, -12));
-
-
 	storei(0, ind(ebp, -8));
 
 
@@ -449,7 +442,7 @@ l11:
 	e11:
 
 
-	print_string("Value of z in loop is :: ");
+	print_string("Value of z in for is :: ");
 	loadi(ind(ebp,-12), eax);
 	print_int(eax);
 	print_char('\n');
@@ -458,6 +451,9 @@ l11:
 	     //Empty Statement
 
 
+	loadi(ind(ebp,-12), eax);
+	addi(1,eax);
+	storei(eax,ind(ebp,-12));
 	j(l9); // Jump if not equal
 	e9:
 

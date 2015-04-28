@@ -658,6 +658,80 @@ class op2 : public ExpAst{
         }
 
         void genCode(){
+
+            if (op == "ASSIGN"){
+                string ltype = leftExpAst->getType();   // anyway both expressions are of same type
+
+                if (rightExpAst->isConstant())
+                {
+                    int x = ((ArrayRef *)leftExpAst)->getOffset();
+
+                    if (ltype == "INT"){
+                        if (x == 1) {    // means it is an array and the value is in ebx
+                            gencode("\tstorei(" + to_string(((INTCONST*)rightExpAst)->evaluate()) + ", ind(ebp, " + reghandler->topstack() + "));");
+                        }
+                        else{
+                            gencode("\tstorei(" + to_string(((INTCONST*)rightExpAst)->evaluate()) + ", ind(ebp, " + to_string(x) + "));");
+                        }
+                    }
+                    else{
+                        if (x == 1) {    // means it is an array and the value is in ebx
+                            gencode("\tstoref(" + to_string(((FLOATCONST*)rightExpAst)->evaluate()) + ", ind(ebp, " + reghandler->topstack() + "));");
+                        }
+                        else{
+                            gencode("\tstoref(" + to_string(((FLOATCONST*)rightExpAst)->evaluate()) + ", ind(ebp, " + to_string(x) + "));");
+                        }
+                    }
+                }
+                else
+                {
+                    rightExpAst->genCode();
+                    // string regtop = reghandler->pop();
+
+                    string assty = (ltype == "INT") ? "i" : "f";
+
+                    int l1 = leftExpAst->getLabel();
+                    int maxregs = reghandler->max_regs;
+
+                    int x;
+                    // cerr << "l1 :: " << l1 << " maxregs :: " << maxregs << endl;
+                    string topreg, secondreg;
+                    if (l1 < maxregs){
+                        topreg = reghandler->pop();
+                        x = ((ArrayRef *)leftExpAst)->getOffset();
+                        secondreg = reghandler->topstack();
+                        reghandler->push(topreg);
+                    }
+
+                    else{
+                        gencode("\tpush" + assty + "(" + reghandler->topstack()  + ");");
+                        
+                        reghandler->swap();
+
+                        x = ((ArrayRef *)leftExpAst)->getOffset();
+
+                        secondreg = reghandler->pop();
+                        topreg = reghandler->topstack();
+                        reghandler->push(secondreg);
+                        reghandler->swap();
+
+                        gencode("\tload" + assty + "(ind(esp)," + topreg  + ");");
+                        gencode("\tpop" + assty + "(1);");
+
+                    }
+
+
+                    if (x == 1) {    // means it is an array and the offset value is in ebx
+                        gencode("\tstore" + assty + "("+ topreg +", ind(ebp, "+ secondreg +"));");
+                    }
+                    else{
+                        gencode("\tstore" + assty + "("+ topreg +", ind(ebp, " + to_string(x) +"));");
+                    }
+                }
+                reghandler->regdesp[reghandler->topstack()] = getType();
+                return;
+            }
+
             int l1 = leftExpAst->getLabel();
             int l2 = rightExpAst->getLabel();
             int maxregs = reghandler->max_regs;
@@ -866,10 +940,6 @@ class op2 : public ExpAst{
                         gencode("\taddf(" + secondreg + "," + topreg + ");"); // or addf ??   
                     }
                 }
-            }
-
-            else if (op == "ASSIGN"){
-                // need to implement
             }
             reghandler->regdesp[reghandler->topstack()] = getType();
         }
