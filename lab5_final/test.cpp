@@ -31,6 +31,19 @@ int main()
 	z = 5;
 	t = 8;
 
+	t = 0;
+	y = 0;
+
+	x = 0.0 || 0.0;
+	printf("Value of x is :: ", x);
+
+
+	x = y || z;
+	printf("Value of x is :: ", x);
+
+	x = z || y;
+	printf("Value of x is :: ", x);
+
 	x = f(x, t, 6);
 
 	p[1+1][2+1] = p[1+2][x+y]*x + y*y + z*z;
@@ -65,7 +78,7 @@ int main()
 	x = p[3][3];
 
 
-	x = (x<=y);
+	x = 0 || 0;
 	printf("Value of x is :: ", x);
 	printf("Value of y is :: ", y);
 	printf("Value of p2,3 is :: ", p[2][3]);

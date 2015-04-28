@@ -673,7 +673,39 @@ class op2 : public ExpAst{
 
 
             if (op == "OR"){
-                // need to implement
+                
+                int currentLabel = globalLabel;
+                globalLabel++;
+                // topreg will contain value of leftexpast
+                if (leftExpAst->getType() == "INT")
+                    gencode("\tcmpi(" + to_string(0) + "," + topreg + ");");
+                else
+                    gencode("\tcmpf(" +to_string(0) + "," + topreg + ");");
+                gencode("\tjne(l" + to_string(currentLabel) + ");"); // meaning leftexpast is non-zero
+
+                int b = 0;
+                if (rightExpAst->isConstant()){
+                    if (rightExpAst->getType() == "INT"){
+                        if(((INTCONST*)rightExpAst)->evaluate() != 0) b = 1;
+                    }
+                    else{
+                        if(((FLOATCONST*)rightExpAst)->evaluate() != 0.0) b = 1;
+                    }
+                    gencode("\tmove("+to_string(b)+"," + topreg + ");");
+                    gencode("\tj(e"+to_string(currentLabel)+");");
+                }else{
+                    if (rightExpAst->getType() == "INT")
+                        gencode("\tcmpi(" + to_string(0) + "," + secondreg + ");");
+                    else
+                        gencode("\tcmpf(" +to_string(0) + "," + secondreg + ");");
+                    gencode("\tjne(l" + to_string(currentLabel) + ");"); // meaning rightexpast is non-zero
+                }
+                gencode("\tmove(0,"+topreg+");");
+                gencode("\tj(e"+to_string(currentLabel)+");");
+                gencode("l"+to_string(currentLabel)+":");
+                gencode("\tmove(1,"+topreg+");");
+                gencode("e"+to_string(currentLabel)+":");
+                
             }
             else if (op == "AND"){
                 // need to implement

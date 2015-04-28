@@ -114,6 +114,80 @@ void main()
 	storef(eax, ind(ebp, -100));
 
 
+	move(0,eax);
+	intTofloat(eax);
+	storef(eax, ind(ebp, -100));
+
+
+	storei(0, ind(ebp, -8));
+
+
+	move(0.000000,eax);
+	cmpf(0,eax);
+	jne(l1);
+	move(0,eax);
+	j(e1);
+	move(0,eax);
+	j(e1);
+l1:
+	move(1,eax);
+e1:
+	floatToint(eax);
+	storei(eax, ind(ebp, -4));
+
+
+	print_string("Value of x is :: ");
+	loadi(ind(ebp,-4), eax);
+	print_int(eax);
+	print_char('\n');
+
+
+
+
+	loadi(ind(ebp,-8), eax);
+	loadi(ind(ebp,-12), ebx);
+	cmpi(0,eax);
+	jne(l2);
+	cmpi(0,ebx);
+	jne(l2);
+	move(0,eax);
+	j(e2);
+l2:
+	move(1,eax);
+e2:
+	storei(eax, ind(ebp, -4));
+
+
+	print_string("Value of x is :: ");
+	loadi(ind(ebp,-4), eax);
+	print_int(eax);
+	print_char('\n');
+
+
+
+
+	loadi(ind(ebp,-12), eax);
+	loadi(ind(ebp,-8), ebx);
+	cmpi(0,eax);
+	jne(l3);
+	cmpi(0,ebx);
+	jne(l3);
+	move(0,eax);
+	j(e3);
+l3:
+	move(1,eax);
+e3:
+	storei(eax, ind(ebp, -4));
+
+
+	print_string("Value of x is :: ");
+	loadi(ind(ebp,-4), eax);
+	print_int(eax);
+	print_char('\n');
+
+
+
+
 
 	 // paramater loading :: f
 	pushi(0); //To make space in stack for return val
@@ -484,15 +558,16 @@ void main()
 	storei(eax, ind(ebp, -4));
 
 
-	loadi(ind(ebp,-4), eax);
-	loadi(ind(ebp,-8), ebx);
-	cmpi(ebx,eax);
-	jg(l1);
 	move(0,eax);
-	j(e1);
-	l1:
+	cmpi(0,eax);
+	jne(l4);
+	move(0,eax);
+	j(e4);
+	move(0,eax);
+	j(e4);
+l4:
 	move(1,eax);
-	e1:
+e4:
 	storei(eax, ind(ebp, -4));
 
 
