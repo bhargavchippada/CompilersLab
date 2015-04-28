@@ -686,16 +686,16 @@ class op2 : public ExpAst{
                     relFunc = "jne";
                 }
                 else if (op == "LT"){
-                    relFunc = "jl";
+                    relFunc = "jge";
                 }
                 else if (op == "GT"){
-                    relFunc = "jg";
-                }
-                else if (op == "LE_OP"){
                     relFunc = "jle";
                 }
+                else if (op == "LE_OP"){
+                    relFunc = "jg";
+                }
                 else if (op == "GE_OP"){
-                    relFunc = "jge";
+                    relFunc = "jl";
                 }
 
                 int currentLabel = globalLabel;

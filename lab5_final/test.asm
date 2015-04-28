@@ -484,12 +484,16 @@ void main()
 	storei(eax, ind(ebp, -4));
 
 
-	print_string("Value of y is :: ");
-	loadi(ind(ebp,-8), eax);
-	print_int(eax);
-	print_char('\n');
-
-
+	loadi(ind(ebp,-4), eax);
+	loadi(ind(ebp,-8), ebx);
+	cmpi(ebx,eax);
+	jg(l1);
+	move(0,eax);
+	j(e1);
+	l1:
+	move(1,eax);
+	e1:
+	storei(eax, ind(ebp, -4));
 
 
 	print_string("Value of x is :: ");

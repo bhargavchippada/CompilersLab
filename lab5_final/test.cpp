@@ -18,10 +18,10 @@ int main()
 	int x, y, z, w;
 	int p[4][5];
 	float t;
-	// x = 1;
-	// y = 2.0;
-	// z = -1;
-	// w = 5.5;
+	//x = 1;
+	//y = 2.0;
+	//z = -1;
+	//w = 5.5;
 
 	p[1][1] = 1.5;
 	p[3][3] = 1.6;
@@ -63,7 +63,9 @@ int main()
 	// x = y / z;]
 
 	x = p[3][3];
-	printf("Value of y is :: ", y);
+
+
+	x = (x<=y);
 	printf("Value of x is :: ", x);
 	printf("Value of y is :: ", y);
 	printf("Value of p2,3 is :: ", p[2][3]);
