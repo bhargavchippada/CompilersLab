@@ -45,7 +45,11 @@ int main(){
 	t = 8;
 
 	x = y*f(1,1,1)*z;
-	printf("Value of x is :: ", x);
+
+	x = x++;
+
+	printf("Value of x++ is :: ", x++ + x++);
+	printf("Value of p33 is :: ", p[3][3]++ + p[3][3]++);
 
 	if (x || 0)
 		z = 3;

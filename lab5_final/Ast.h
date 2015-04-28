@@ -921,13 +921,17 @@ class op1 : public ExpAst{
 
         int labelcalc(bool left){
             label = singleExpAst->labelcalc(true);
+            if(op=="PP"){
+                label = computelabel(label,1);
+            }
             return label;
         }
 
         void genCode(){
+            
 
-            singleExpAst->genCode();
             if (op == "NOT"){
+                singleExpAst->genCode();
                 int currentLabel = globalLabel;
                 globalLabel++;
                 gencode("\tcmpi(0," + reghandler->topstack() + ");");
@@ -939,6 +943,7 @@ class op1 : public ExpAst{
                 gencode("\te" + to_string(currentLabel) + ":");
             }
             else if (op == "UMINUS"){
+                singleExpAst->genCode();
                 if (type == "INT"){
                     gencode("\tmuli(-1," + reghandler->topstack() + ");");
                 }
@@ -946,14 +951,38 @@ class op1 : public ExpAst{
                     gencode("\tmulf(-1," + reghandler->topstack() + ");");
                 }
             } else if (op == "PP"){
-                /*
-                if (type == "INT"){
-                    gencode("\taddi(1," + reghandler->topstack() + ");");
+                reghandler->swap();
+                int x = ((ArrayRef *)singleExpAst)->getOffset();
+                string secondreg = reghandler->pop();
+                string topreg = reghandler->topstack();
+                reghandler->push(secondreg);
+                reghandler->swap();
+                if (x == 1){
+                    if (type == "INT"){
+                        gencode("\tloadi(ind(ebp," + secondreg  + "), " + topreg  + ");");
+                        gencode("\taddi(1," + topreg  + ");");
+                        gencode("\tstorei(" + reghandler->topstack()  + ",ind(ebp,"+ secondreg+"));");
+                    }
+                    else{
+                        gencode("\tloadf(ind(ebp," + secondreg  + "), " + reghandler->topstack()  + ");");
+                        gencode("\taddf(1.0," + reghandler->topstack()  + ");");
+                        gencode("\tstoref(" + reghandler->topstack()  + ",ind(ebp,"+ secondreg+"));");                           
+                    }
                 }
+
                 else{
-                    gencode("\taddf(1," + reghandler->topstack() + ");");
+                    if (type == "INT"){
+                        gencode("\tloadi(ind(ebp," + to_string(x)  + "), " + reghandler->topstack()  + ");");
+                        gencode("\taddi(1," + reghandler->topstack()  + ");");
+                        gencode("\tstorei(" + reghandler->topstack()  + ",ind(ebp,"+ to_string(x)+"));");
+                    }
+                    else {
+                        gencode("\tloadf(ind(ebp," + to_string(x)  + "), " + reghandler->topstack()  + ");");
+                        gencode("\taddf(1," + reghandler->topstack()  + ");");
+                        gencode("\tstoref(" + reghandler->topstack()  + ",ind(ebp,"+ to_string(x)+"));");
+                    }
                 }
-                */
+                
             }
             reghandler->regdesp[reghandler->topstack()] = getType();
 
@@ -1314,13 +1343,6 @@ class AssStmt : public StmtAst{
         }
 
         void genCode(){
-            
-
-            // rightExpAst->genCode();
-        
-            // rightExpAst->genCode();
-            // leftExpAst->genCode();
-
             string ltype = leftExpAst->getType();   // anyway both expressions are of same type
 
             if (rightExpAst->isConstant())
@@ -1387,7 +1409,6 @@ class AssStmt : public StmtAst{
                     gencode("\tstore" + assty + "("+ topreg +", ind(ebp, " + to_string(x) +"));");
                 }
             }
-
         }
 };
 

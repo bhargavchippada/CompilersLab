@@ -274,8 +274,67 @@ void main()
 	storei(eax, ind(ebp, -4));
 
 
-	print_string("Value of x is :: ");
 	loadi(ind(ebp,-4), eax);
+	addi(1,eax);
+	storei(eax,ind(ebp,-4));
+	storei(eax, ind(ebp, -4));
+
+
+	print_string("Value of x++ is :: ");
+	loadi(ind(ebp,-4), eax);
+	addi(1,eax);
+	storei(eax,ind(ebp,-4));
+	pushi(eax);
+	loadi(ind(ebp,-4), eax);
+	addi(1,eax);
+	storei(eax,ind(ebp,-4));
+	loadi(ind(esp),ebx);
+	popi(1);
+	addi(ebx,eax);
+	print_int(eax);
+	print_char('\n');
+
+
+	     //Empty Statement
+
+
+	print_string("Value of p33 is :: ");
+	move(3,ebx);
+	muli(-20,ebx);
+	pushi(ebx);
+	move(3,ebx);
+	muli(-4,ebx);
+	pushi(ebx);
+	move(-20,ebx);
+	loadi(ind(esp),eax);
+	addi(eax,ebx);
+	popi(1);
+	loadi(ind(esp),eax);
+	addi(eax,ebx);
+	popi(1);
+	loadi(ind(ebp,ebx), eax);
+	addi(1,eax);
+	storei(eax,ind(ebp,ebx));
+	pushi(eax);
+	move(3,ebx);
+	muli(-20,ebx);
+	pushi(ebx);
+	move(3,ebx);
+	muli(-4,ebx);
+	pushi(ebx);
+	move(-20,ebx);
+	loadi(ind(esp),eax);
+	addi(eax,ebx);
+	popi(1);
+	loadi(ind(esp),eax);
+	addi(eax,ebx);
+	popi(1);
+	loadi(ind(ebp,ebx), eax);
+	addi(1,eax);
+	storei(eax,ind(ebp,ebx));
+	loadi(ind(esp),ebx);
+	popi(1);
+	addi(ebx,eax);
 	print_int(eax);
 	print_char('\n');
 
