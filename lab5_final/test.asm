@@ -13,14 +13,12 @@ void fact()
 	e2:
 	cmpi(0, eax);
 	je(l1); // Jump if not equal
-	// returnast
 	storei(1, ind(ebp,  8)); // Save the return value in stack
 
 	j(e); // Unconditional jump
 
 	j(e1);
 	l1:
-	// returnast
 	loadi(ind(ebp,4), eax);
 	pushi(eax);
 
@@ -43,7 +41,6 @@ void fact()
 
 	e1:
 
-
 e:  
 	loadi(ind(ebp), ebp); // restoring dynamic link
 	popi(1); //pop stack
@@ -60,30 +57,23 @@ void f()
 	print_int(eax);
 	print_char('\n');
 
-
 	     //Empty Statement
-
 
 	print_string("Value of b in f is :: ");
 	loadi(ind(ebp,8), eax);
 	print_int(eax);
 	print_char('\n');
 
-
 	     //Empty Statement
-
 
 	print_string("Value of c in f is :: ");
 	loadf(ind(ebp,12), eax);
 	print_float(eax);
 	print_char('\n');
 
-
 	     //Empty Statement
 
-
 	storei(5, ind(ebp, -8));
-
 
 	loadi(ind(ebp,4), eax);
 	loadi(ind(ebp,8), ebx);
@@ -92,15 +82,12 @@ void f()
 	muli(ebx,eax);
 	storei(eax, ind(ebp, -4));
 
-
 	print_string("Value of x in f is :: ");
 	loadi(ind(ebp,-4), eax);
 	print_int(eax);
 	print_char('\n');
 
-
 	     //Empty Statement
-
 
 	loadi(ind(ebp,-4), eax);
 	loadi(ind(ebp,-8), ebx);
@@ -113,17 +100,13 @@ void f()
 	e3:
 	storei(eax, ind(ebp, -12));
 
-
 	print_string("Value of z in f is :: ");
 	loadi(ind(ebp,-12), eax);
 	print_int(eax);
 	print_char('\n');
 
-
 	     //Empty Statement
 
-
-	// returnast
 	loadi(ind(ebp,-4), eax);
 	loadi(ind(ebp,-8), ebx);
 	cmpi(ebx,eax);
@@ -136,7 +119,6 @@ void f()
 	storei(eax, ind(ebp,16)); // Save the return value in stack
 
 	j(e); // Unconditional jump
-
 
 
 e:  
@@ -166,7 +148,6 @@ void main()
 	popi(1);
 	storei(eax, ind(ebp, ebx));
 
-
 	move(1.600000,eax);
 	floatToint(eax);
 	move(3,ebx);
@@ -183,7 +164,6 @@ void main()
 	addi(ecx,ebx);
 	popi(1);
 	storei(eax, ind(ebp, ebx));
-
 
 	print_string("fact(8) :: ");
 
@@ -220,12 +200,9 @@ void main()
 	print_int(eax);
 	print_char('\n');
 
-
 	     //Empty Statement
 
-
 	storei(0, ind(ebp, -4));
-
 
 	// For Statement:
 
@@ -276,7 +253,6 @@ l5:
 	storei(eax, ind(ebp, ebx));
 	e7:
 
-
 	print_string("array[x] :: ");
 	loadi(ind(ebp,-4), eax);
 	print_int(eax);
@@ -292,9 +268,7 @@ l5:
 	print_int(eax);
 	print_char('\n');
 
-
 	     //Empty Statement
-
 
 	loadi(ind(ebp,-4), eax);
 	addi(1,eax);
@@ -302,9 +276,7 @@ l5:
 	j(l5); // Jump if not equal
 	e5:
 
-
 	storei(0, ind(ebp, -184));
-
 
 	// For Statement:
 	storei(0, ind(ebp, -4));
@@ -365,12 +337,10 @@ l11:
 	addi(1,eax);
 	storei(eax, ind(ebp, -184));
 
-
 	j(e13);
 	l13:
 	     //Empty Statement
 	e13:
-
 
 	loadi(ind(ebp,-8), eax);
 	addi(1,eax);
@@ -378,36 +348,28 @@ l11:
 	j(l11); // Jump if not equal
 	e11:
 
-
 	loadi(ind(ebp,-4), eax);
 	addi(1,eax);
 	storei(eax,ind(ebp,-4));
 	j(l9); // Jump if not equal
 	e9:
 
-
 	print_string("invcounts :: ");
 	loadi(ind(ebp,-184), eax);
 	print_int(eax);
 	print_char('\n');
 
-
 	     //Empty Statement
-
 
 	storei(1, ind(ebp, -4));
 
-
 	storei(2, ind(ebp, -8));
 
-
 	storei(5, ind(ebp, -12));
-
 
 	move(8,eax);
 	intTofloat(eax);
 	storef(eax, ind(ebp, -180));
-
 
 	loadi(ind(ebp,-8), eax);
 	pushi(eax);
@@ -432,21 +394,17 @@ l11:
 	muli(ebx,eax);
 	storei(eax, ind(ebp, -4));
 
-
 	print_string("Value of x is :: ");
 	loadi(ind(ebp,-4), eax);
 	print_int(eax);
 	print_char('\n');
 
-
 	     //Empty Statement
-
 
 	loadi(ind(ebp,-4), eax);
 	addi(1,eax);
 	storei(eax,ind(ebp,-4));
 	storei(eax, ind(ebp, -4));
-
 
 	print_string("Value of x++ is :: ");
 	loadi(ind(ebp,-4), eax);
@@ -459,9 +417,7 @@ l11:
 	print_int(eax);
 	print_char('\n');
 
-
 	     //Empty Statement
-
 
 	print_string("Value of p33 is :: ");
 	move(3,ebx);
@@ -500,9 +456,7 @@ l11:
 	print_int(eax);
 	print_char('\n');
 
-
 	     //Empty Statement
-
 
 	// If Statement:
 	loadi(ind(ebp,-4), eax);
@@ -523,7 +477,6 @@ e16:
 	storei(4, ind(ebp, -12));
 	e15:
 
-
 	// While Statement:
 
 l17:
@@ -541,22 +494,17 @@ l17:
 	addi(-1,eax);
 	storei(eax, ind(ebp, -12));
 
-
 	print_string("Value of z in loop is :: ");
 	loadi(ind(ebp,-12), eax);
 	print_int(eax);
 	print_char('\n');
 
-
 	     //Empty Statement
-
 
 	j(l17); // Jump if not equal
 	e17:
 
-
 	storei(0, ind(ebp, -12));
-
 
 	// For Statement:
 
@@ -575,9 +523,7 @@ l19:
 	addi(1,eax);
 	storei(eax, ind(ebp, -12));
 
-
 	storei(0, ind(ebp, -8));
-
 
 	// While Statement:
 
@@ -597,50 +543,39 @@ l21:
 	addi(1,eax);
 	storei(eax, ind(ebp, -8));
 
-
 	print_string("Value of y in while for loop is :: ");
 	loadi(ind(ebp,-8), eax);
 	print_int(eax);
 	print_char('\n');
 
-
 	     //Empty Statement
-
 
 	j(l21); // Jump if not equal
 	e21:
-
 
 	print_string("Value of z in loop is :: ");
 	loadi(ind(ebp,-12), eax);
 	print_int(eax);
 	print_char('\n');
 
-
 	     //Empty Statement
-
 
 	j(l19); // Jump if not equal
 	e19:
-
 
 	print_string("Value of x is :: ");
 	loadi(ind(ebp,-4), eax);
 	print_int(eax);
 	print_char('\n');
 
-
 	     //Empty Statement
-
 
 	print_string("Value of y is :: ");
 	loadi(ind(ebp,-8), eax);
 	print_int(eax);
 	print_char('\n');
 
-
 	     //Empty Statement
-
 
 	print_string("Value of p2,3 is :: ");
 	move(2,eax);
@@ -660,9 +595,7 @@ l21:
 	print_int(eax);
 	print_char('\n');
 
-
 	     //Empty Statement
-
 
 	print_string("Value of p0,3 is :: ");
 	move(0,eax);
@@ -682,9 +615,7 @@ l21:
 	print_int(eax);
 	print_char('\n');
 
-
 	     //Empty Statement
-
 
 	print_string("Value of p4,3 is :: ");
 	move(4,eax);
@@ -704,18 +635,14 @@ l21:
 	print_int(eax);
 	print_char('\n');
 
-
 	     //Empty Statement
-
 
 	print_string("Value of z is :: ");
 	loadi(ind(ebp,-12), eax);
 	print_int(eax);
 	print_char('\n');
 
-
 	     //Empty Statement
-
 
 	addi(184,esp); // removing space for locals
 	return; //return

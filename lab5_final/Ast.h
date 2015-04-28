@@ -73,7 +73,7 @@ class ExpAst : public abstract_astnode {
     string type="default";
     int label = -1;
 
-	public:
+    public:
 
     virtual void print (int level){
         cout<<string(level, ' ')<<"This is an abstract ExpAst class" << endl;
@@ -141,7 +141,7 @@ class INTCONST : public ExpAst {
   public:
 
     INTCONST(int n){
-    	Num = n;
+        Num = n;
     }
 
     string getType(){
@@ -153,7 +153,7 @@ class INTCONST : public ExpAst {
     }
 
     int evaluate(){
-    	return Num;
+        return Num;
     }
 
     bool validate(){
@@ -169,7 +169,7 @@ class INTCONST : public ExpAst {
     }
 
     void print(int level){
-    	cout<<string(level, ' ')<<"(IntConst_"<<label<<" "<<Num<<")";
+        cout<<string(level, ' ')<<"(IntConst_"<<label<<" "<<Num<<")";
     }
 
     int labelcalc(bool left){
@@ -366,7 +366,7 @@ class ArrayRef : public ExpAst {
             exitcode=true;
             return false;
         }
-    	(*expAstList).push_back(expast);
+        (*expAstList).push_back(expast);
         return true;
     }
 
@@ -956,7 +956,7 @@ class op1 : public ExpAst{
     public:
 
         op1(string ope, ExpAst *singleExp): op(ope), singleExpAst(singleExp){}
-	    
+        
         string getType(){
             return type;
         }
@@ -983,11 +983,11 @@ class op1 : public ExpAst{
              return "("+op+"_"+type+" "+singleExpAst->getExpStr()+")";
         }
 
-	    void print(int level){
-	        cout<<string(level, ' ')<<"("<<op<<"_"<<type<<"_"<<label<<" ";
-	        singleExpAst->print(0);
+        void print(int level){
+            cout<<string(level, ' ')<<"("<<op<<"_"<<type<<"_"<<label<<" ";
+            singleExpAst->print(0);
             cout<<")";
-	    }
+        }
 
         int labelcalc(bool left){
             label = singleExpAst->labelcalc(true);
@@ -1060,22 +1060,22 @@ class op1 : public ExpAst{
 };
 
 class FUNCALL : public ExpAst{
-	protected:
-		IDENTIFIERAST *funcName;
-		list<ExpAst*> *expSequence;
+    protected:
+        IDENTIFIERAST *funcName;
+        list<ExpAst*> *expSequence;
         string type;
         int label = -1;
-	
-	public:
+    
+    public:
 
-		FUNCALL(IDENTIFIERAST *iden){
+        FUNCALL(IDENTIFIERAST *iden){
             funcName=iden;
             expSequence = new list<ExpAst*>();
         }
 
-		void addExpAstList(list<ExpAst*> *expastlist){
-			expSequence=expastlist;
-		}
+        void addExpAstList(list<ExpAst*> *expastlist){
+            expSequence=expastlist;
+        }
 
         string getType(){
             return type;
@@ -1148,17 +1148,17 @@ class FUNCALL : public ExpAst{
             return expstr;
         }
 
-		void print(int level){
+        void print(int level){
             cout<<string(level, ' ')<<"(FunCall ";
-			funcName->print(0);
+            funcName->print(0);
             cout<<"{";
-			for (list<ExpAst*>::iterator it = expSequence->begin(); it != expSequence->end();){
-				(*it)->print(0);
+            for (list<ExpAst*>::iterator it = expSequence->begin(); it != expSequence->end();){
+                (*it)->print(0);
                 it++;
                 if(it != expSequence->end()) cout<<",";
-			}
+            }
             cout<<"})";
-		}
+        }
 
         int labelcalc(bool left){
             funcName->labelcalc(true);
@@ -1298,7 +1298,7 @@ class BlockStmt : public StmtAst{
         void genCode(){
             for (list<StmtAst*>::iterator it = stmtSequence->begin(); it != stmtSequence->end();it++){
                 (*it)->genCode();
-                gencode("\n");
+                gencode("");
             }
         }
 };
@@ -1349,7 +1349,7 @@ class ReturnStmt : public StmtAst{
         }
 
         void genCode(){
-            gencode("\t// returnast");
+            // gencode("\t// returnast");
 
             if (returnExp->isConstant()){
                 if (returnExp->getType() == "INT")
@@ -1509,6 +1509,27 @@ class IfStmt : public StmtAst{
 
         void genCode(){
             gencode("\t// If Statement:");
+
+            if (ifExpAst->isConstant()){
+                if (ifExpAst->getType() == "INT"){
+                    if (((INTCONST *) ifExpAst)->evaluate() == 0){
+                        elseStmtAst->genCode();
+                    }
+                    else{
+                        thenStmtAst->genCode();
+                    }    
+                }
+                else{
+                    if (((FLOATCONST *) ifExpAst)->evaluate() == 0){
+                        elseStmtAst->genCode();
+                    }
+                    else{
+                        thenStmtAst->genCode();
+                    }
+                }
+                
+                return;
+            }
 
             int currentLabel = globalLabel;
             globalLabel++;
