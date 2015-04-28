@@ -1173,8 +1173,7 @@ class FUNCALL : public ExpAst{
             // outputFile << "\t// funcallAST\n";
 
             // Push the return value
-
-
+            string topreg = reghandler->topstack();
             pair<stack<string>, stack<string> > savedregs = saveUsedRegisters();
 
             while(!(reghandler->regs).empty()) (reghandler->regs).pop();
@@ -1248,22 +1247,25 @@ class FUNCALL : public ExpAst{
             }
 
 
+            
+            
+            // move return value into eax
+            // Pop retrun value
+            if (type == "INT"){
+                gencode("\tloadi(ind(esp)," + topreg + "); // receives the return value");
+                gencode("\tpopi(1); // Clean up return value\n");
+            } 
+            else if (type == "FLOAT"){
+                gencode("\tloadf(ind(esp)," + topreg + "); // receives the return value");
+                gencode("\tpopf(1); // Clean up return value\n");
+            }
+
+
             while(!(savedregs.first).empty()){
                 gencode((savedregs.first).top());
                 (savedregs.first).pop();
             }
             reghandler->regs = savedregs.second;
-            
-            // move return value into eax
-            // Pop retrun value
-            if (type == "INT"){
-                gencode("\tloadi(ind(esp)," + reghandler->topstack() + "); // receives the return value");
-                gencode("\tpopi(1); // Clean up return value\n");
-            } 
-            else if (type == "FLOAT"){
-                gencode("\tloadf(ind(esp)," + reghandler->topstack() + "); // receives the return value");
-                gencode("\tpopf(1); // Clean up return value\n");
-            }
 
             reghandler->regdesp[reghandler->topstack()] = getType();
 

@@ -27,7 +27,7 @@ int f(int a, int b, float c){
 
 int main(){
 	int x, y, z, w;
-	int p[4][5], array[20];
+	int p[10][5], array[20];
 	float t;
 	int invcounts;
 	//x = 1;
@@ -38,11 +38,22 @@ int main(){
 	p[1][1] = 1.5;
 	p[3][3] = 1.6;
 
+	x = 4;
+
+	// p[6][5] = 12;
+	printf("heree");
+	p[12][fact(2)] = fact(4);
+	printf(" shoukd be 2:: ", p[12][2]);
+
 	printf("fact(8) :: ", fact(fact(3) + fact(2)));
 
-	x = 0;
 
-	for(1;x < 20; x++){
+
+
+	if((1 || 2 || p[3][3]) && 0 && 5) printf("fljgnfljg");
+	else ;
+
+	for(x=0;x < 20; x++){
 		if (x < 10)
 			array[x] = x;
 		else array[x] = 20 - x;

@@ -250,7 +250,7 @@ statement
     if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
-  | IDENTIFIER '(' ')'
+  | IDENTIFIER '(' ')' ';'
   {
 
 
@@ -258,7 +258,7 @@ statement
     if(!(((FuncallStmt*) $$)->validate())) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
-  | IDENTIFIER '(' expression_list ')'
+  | IDENTIFIER '(' expression_list ')' ';'
   {
     $$ = new FuncallStmt(new IDENTIFIERAST($1));
     ((FuncallStmt*) $$)->addExpAstList($3);
