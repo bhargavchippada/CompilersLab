@@ -1,7 +1,7 @@
-Lab 3: AST to represent non-declarative part
+Lab 5: Code generation
 Bhargav Chippada 120050053
 Rohit Kumar	 120050028
 
-1) On terminal, run 'make' to compile code
-2) run './a.out < test' to execute the code on some test file
-3) run 'make clean' to clean the folder
+On terminal, run 'make' to compile code
+
+Compiled code is present in test.asm

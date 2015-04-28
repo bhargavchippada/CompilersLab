@@ -1,9 +1,0 @@
-void main()
-{
-for (x=0; x <10; x++);
-while (x<=0) {
-x = 10;
-y = 14;
-}
-x = asd (x=2,4);
-}
