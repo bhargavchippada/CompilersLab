@@ -81,13 +81,19 @@ function_definition
     blockstmt->print(0);std::cout<<std::endl<<std::endl;
     blockstmt->genCode();
 
-    if (localtableTemp->totalLocalOffset() > 0)
-      gencode("\taddi(" + to_string(localtableTemp->totalLocalOffset()) + ",esp); // removing space for locals");
 
 
     if (localtableTemp->tablename != "main"){
-      gencode("e:  loadi(ind(ebp), ebp); // restoring dynamic link");
+      gencode("e:  ");
+      if (localtableTemp->totalLocalOffset() > 0)
+        gencode("\taddi(" + to_string(localtableTemp->totalLocalOffset()) + ",esp); // removing space for locals");
+
+      gencode("\tloadi(ind(ebp), ebp); // restoring dynamic link");
       gencode("\tpopi(1); //pop stack");
+    }
+    else{
+      if (localtableTemp->totalLocalOffset() > 0)
+        gencode("\taddi(" + to_string(localtableTemp->totalLocalOffset()) + ",esp); // removing space for locals");
     }
     gencode("\treturn; //return");
     gencode("}");

@@ -708,8 +708,39 @@ class op2 : public ExpAst{
                 
             }
             else if (op == "AND"){
-                // need to implement
+                int currentLabel = globalLabel;
+                globalLabel++;
+                // topreg will contain value of leftexpast
+                if (leftExpAst->getType() == "INT")
+                    gencode("\tcmpi(" + to_string(0) + "," + topreg + ");");
+                else
+                    gencode("\tcmpf(" +to_string(0) + "," + topreg + ");");
+                gencode("\tje(l" + to_string(currentLabel) + ");"); // meaning leftexpast is non-zero
+
+                int b = 0;
+                if (rightExpAst->isConstant()){
+                    if (rightExpAst->getType() == "INT"){
+                        if(((INTCONST*)rightExpAst)->evaluate() != 0) b = 1;
+                    }
+                    else{
+                        if(((FLOATCONST*)rightExpAst)->evaluate() != 0) b = 1;
+                    }
+                    gencode("\tmove("+to_string(b) + "," + topreg + ");");
+                    gencode("\tj(e"+to_string(currentLabel)+");");
+                }else{
+                    if (rightExpAst->getType() == "INT")
+                        gencode("\tcmpi(" + to_string(0) + "," + secondreg + ");");
+                    else
+                        gencode("\tcmpf(" +to_string(0) + "," + secondreg + ");");
+                    gencode("\tje(l" + to_string(currentLabel) + ");"); // meaning rightexpast is non-zero
+                }
+                gencode("\tmove(1,"+topreg+");");
+                gencode("\tj(e"+to_string(currentLabel)+");");
+                gencode("l"+to_string(currentLabel)+":");
+                gencode("\tmove(0,"+topreg+");");
+                gencode("e"+to_string(currentLabel)+":");
             }
+
             else if (op == "EQ_OP" || op == "NE_OP" || op == "LT" || op == "GT" || op == "LE_OP" || op == "GE_OP"){
                 string relFunc;
                 if (op == "EQ_OP")
@@ -718,16 +749,16 @@ class op2 : public ExpAst{
                     relFunc = "jne";
                 }
                 else if (op == "LT"){
-                    relFunc = "jge";
-                }
-                else if (op == "GT"){
-                    relFunc = "jle";
-                }
-                else if (op == "LE_OP"){
                     relFunc = "jg";
                 }
-                else if (op == "GE_OP"){
+                else if (op == "GT"){
                     relFunc = "jl";
+                }
+                else if (op == "LE_OP"){
+                    relFunc = "jge";
+                }
+                else if (op == "GE_OP"){
+                    relFunc = "jle";
                 }
 
                 int currentLabel = globalLabel;
@@ -1158,8 +1189,24 @@ class ReturnStmt : public StmtAst{
         }
 
         void genCode(){
+            gencode("\t// returnast");
+
+            if (returnExp->isConstant()){
+                if (returnExp->getType() == "INT")
+                    gencode("\tstorei(" + to_string(((INTCONST*) returnExp)->evaluate()) + ", ind(ebp,  " + to_string(localtable->totalParameterOffset() + I) /* +I because ebp*/ + ")); // Save the return value in stack\n");
+                else
+                    gencode("\tstoref(" + to_string(((FLOATCONST*) returnExp)->evaluate()) + ", ind(ebp,  " + to_string(localtable->totalParameterOffset() + I) /* +I because ebp*/ + ")); // Save the return value in stack\n");
+            }
+            else{
+                returnExp->genCode();
+                if (returnExp->getType() == "INT")
+                    gencode("\tstorei(" + reghandler->topstack() + ", ind(ebp," + to_string(localtable->totalParameterOffset() + I) + ")); // Save the return value in stack\n");
+                else
+                    gencode("\tstoref(" + reghandler->topstack() + ", ind(ebp," + to_string(localtable->totalParameterOffset() + I) + ")); // Save the return value in stack\n");
+            }
             
-        }
+            gencode("\tj(e); // Unconditional jump\n");
+        };
 
 };
 

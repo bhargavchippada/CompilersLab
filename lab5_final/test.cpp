@@ -1,5 +1,5 @@
 int f(int a, int b, float c){
-	int x,y;
+	int x,y,z;
 
 	printf("Value of a in f is :: ", a);
 	printf("Value of b in f is :: ", b);
@@ -7,10 +7,29 @@ int f(int a, int b, float c){
 
 	y = 5;
 	x = (a*b*b); 
-	// y = x <= y;
 	printf("Value of x in f is :: ", x);
+
+	x = y;
+	z = x > 6;
+	printf("Value of z in f is :: ", z);
+	z = x < 6;
+	printf("Value of z in f is :: ", z);
+	z = x >= 6;
+	printf("Value of z in f is :: ", z);
+	z = x <= 6;
+	printf("Value of z in f is :: ", z);
+	z = x == 6;
+	printf("Value of z in f is :: ", z);
+	z = x != 6;
+	printf("Value of z in f is :: ", z);
+	
+	// y = x == y;
 	// printf("Value of y in f is :: ", y);
-	// return x > y;
+	
+	// y = x != y;
+	// printf("Value of y in f is :: ", y);
+	
+	return x > y;
 }
 
 int main()
@@ -34,9 +53,37 @@ int main()
 	t = 0;
 	y = 0;
 
-	x = 0.0 || 0.0;
+	y = x != y;
+	printf("Value of y in f is :: ", y);
+	x = 1.0 && 1;
 	printf("Value of x is :: ", x);
 
+	x = 1 && 1.0;
+	printf("Value of x is :: ", x);
+
+
+	x = 0.0 && 1.0;
+	printf("Value of x is :: ", x);
+
+	x = 1.0 && 1.0;
+	printf("Value of x is :: ", x);
+
+	x = 6.0 && 6.0;
+	printf("Value of x is :: ", x);
+
+	x = 0 && z;
+	printf("Value of x is :: ", x);
+
+	x = z && 0;
+	printf("Value of x is :: ", x);
+
+	x = t && 6;
+	printf("Value of x is :: ", x);
+	
+	x =  6 && t;
+	printf("Value of x is :: ", x);
+
+	printf("Value of x idlfdhflkjl");
 
 	x = y || z;
 	printf("Value of x is :: ", x);
@@ -45,6 +92,8 @@ int main()
 	printf("Value of x is :: ", x);
 
 	x = f(x, t, 6);
+	printf("Value of x after funcall is :: ", x);
+
 
 	p[1+1][2+1] = p[1+2][x+y]*x + y*y + z*z;
 
