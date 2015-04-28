@@ -148,7 +148,7 @@ e:
 
 void main()
 {
-	addi(-100,esp); // making space for locals
+	addi(-184,esp); // making space for locals
 	move(1.500000,eax);
 	floatToint(eax);
 	move(1,ebx);
@@ -185,7 +185,7 @@ void main()
 	storei(eax, ind(ebp, ebx));
 
 
-	print_string("fact(3) :: ");
+	print_string("fact(8) :: ");
 
 	 // paramater loading :: fact
 	pushi(0); //To make space in stack for return val
@@ -224,6 +224,186 @@ void main()
 	     //Empty Statement
 
 
+	storei(0, ind(ebp, -4));
+
+
+	// For Statement:
+
+l5:
+	loadi(ind(ebp,-4), eax);
+	cmpi(20,eax);
+	jg(l6);
+	move(0,eax);
+	j(e6);
+	l6:
+	move(1,eax);
+	e6:
+	cmpi(0, eax);
+	je(e5); // Jump if not equal
+	// If Statement:
+	loadi(ind(ebp,-4), eax);
+	cmpi(10,eax);
+	jg(l8);
+	move(0,eax);
+	j(e8);
+	l8:
+	move(1,eax);
+	e8:
+	cmpi(0, eax);
+	je(l7); // Jump if not equal
+	loadi(ind(ebp,-4), eax);
+	pushi(eax);
+	loadi(ind(ebp,-4), eax);
+	muli(-4,eax);
+	pushi(eax);
+	move(-100,eax);
+	loadi(ind(esp),ebx);
+	addi(ebx,eax);
+	popi(1);
+	loadi(ind(esp),ebx);
+	popi(1);
+	storei(ebx, ind(ebp, eax));
+	j(e7);
+	l7:
+	move(20,eax);
+	loadi(ind(ebp,-4), ebx);
+	muli(-1,ebx);
+	addi(ebx,eax);
+	pushi(eax);
+	loadi(ind(ebp,-4), eax);
+	muli(-4,eax);
+	pushi(eax);
+	move(-100,eax);
+	loadi(ind(esp),ebx);
+	addi(ebx,eax);
+	popi(1);
+	loadi(ind(esp),ebx);
+	popi(1);
+	storei(ebx, ind(ebp, eax));
+	e7:
+
+
+	print_string("array[x] :: ");
+	loadi(ind(ebp,-4), eax);
+	print_int(eax);
+	print_string(" : ");
+	loadi(ind(ebp,-4), eax);
+	muli(-4,eax);
+	pushi(eax);
+	move(-100,eax);
+	loadi(ind(esp),ebx);
+	addi(ebx,eax);
+	popi(1);
+	loadi(ind(ebp,eax),eax);
+	print_int(eax);
+	print_char('\n');
+
+
+	     //Empty Statement
+
+
+	loadi(ind(ebp,-4), eax);
+	addi(1,eax);
+	storei(eax,ind(ebp,-4));
+	j(l5); // Jump if not equal
+	e5:
+
+
+	storei(0, ind(ebp, -184));
+
+
+	// For Statement:
+	storei(0, ind(ebp, -4));
+
+l9:
+	loadi(ind(ebp,-4), eax);
+	cmpi(20,eax);
+	jg(l10);
+	move(0,eax);
+	j(e10);
+	l10:
+	move(1,eax);
+	e10:
+	cmpi(0, eax);
+	je(e9); // Jump if not equal
+	// For Statement:
+	storei(0, ind(ebp, -8));
+
+l11:
+	loadi(ind(ebp,-8), eax);
+	loadi(ind(ebp,-4), ebx);
+	cmpi(ebx,eax);
+	jg(l12);
+	move(0,eax);
+	j(e12);
+	l12:
+	move(1,eax);
+	e12:
+	cmpi(0, eax);
+	je(e11); // Jump if not equal
+	// If Statement:
+	loadi(ind(ebp,-4), eax);
+	muli(-4,eax);
+	pushi(eax);
+	move(-100,eax);
+	loadi(ind(esp),ebx);
+	addi(ebx,eax);
+	popi(1);
+	loadi(ind(ebp,eax),eax);
+	pushi(eax);
+	loadi(ind(ebp,-8), eax);
+	muli(-4,eax);
+	pushi(eax);
+	move(-100,eax);
+	loadi(ind(esp),ebx);
+	addi(ebx,eax);
+	popi(1);
+	loadi(ind(ebp,eax),eax);
+	loadi(ind(esp),ebx);
+	popi(1);
+	cmpi(ebx,eax);
+	jl(l14);
+	move(0,eax);
+	j(e14);
+	l14:
+	move(1,eax);
+	e14:
+	cmpi(0, eax);
+	je(l13); // Jump if not equal
+	loadi(ind(ebp,-184), eax);
+	addi(1,eax);
+	storei(eax, ind(ebp, -184));
+
+
+	j(e13);
+	l13:
+	     //Empty Statement
+	e13:
+
+
+	loadi(ind(ebp,-8), eax);
+	addi(1,eax);
+	storei(eax,ind(ebp,-8));
+	j(l11); // Jump if not equal
+	e11:
+
+
+	loadi(ind(ebp,-4), eax);
+	addi(1,eax);
+	storei(eax,ind(ebp,-4));
+	j(l9); // Jump if not equal
+	e9:
+
+
+	print_string("invcounts :: ");
+	loadi(ind(ebp,-184), eax);
+	print_int(eax);
+	print_char('\n');
+
+
+	     //Empty Statement
+
+
 	storei(1, ind(ebp, -4));
 
 
@@ -235,7 +415,7 @@ void main()
 
 	move(8,eax);
 	intTofloat(eax);
-	storef(eax, ind(ebp, -100));
+	storef(eax, ind(ebp, -180));
 
 
 	loadi(ind(ebp,-8), eax);
@@ -260,6 +440,15 @@ void main()
 	loadi(ind(ebp,-12), ebx);
 	muli(ebx,eax);
 	storei(eax, ind(ebp, -4));
+
+
+	print_string("Value of x is :: ");
+	loadi(ind(ebp,-4), eax);
+	print_int(eax);
+	print_char('\n');
+
+
+	     //Empty Statement
 
 
 	loadi(ind(ebp,-4), eax);
@@ -327,36 +516,36 @@ void main()
 	// If Statement:
 	loadi(ind(ebp,-4), eax);
 	cmpi(0,eax);
-	jne(l6);
+	jne(l16);
 	move(0,eax);
-	j(e6);
+	j(e16);
 	move(0,eax);
-	j(e6);
-l6:
+	j(e16);
+l16:
 	move(1,eax);
-e6:
+e16:
 	cmpi(0, eax);
-	je(l5); // Jump if not equal
+	je(l15); // Jump if not equal
 	storei(3, ind(ebp, -12));
-	j(e5);
-	l5:
+	j(e15);
+	l15:
 	storei(4, ind(ebp, -12));
-	e5:
+	e15:
 
 
 	// While Statement:
 
-l7:
+l17:
 	loadi(ind(ebp,-12), eax);
 	cmpi(0,eax);
-	jl(l8);
+	jl(l18);
 	move(0,eax);
-	j(e8);
-	l8:
+	j(e18);
+	l18:
 	move(1,eax);
-	e8:
+	e18:
 	cmpi(0, eax);
-	je(e7); // Jump if not equal
+	je(e17); // Jump if not equal
 	loadi(ind(ebp,-12), eax);
 	addi(-1,eax);
 	storei(eax, ind(ebp, -12));
@@ -371,41 +560,48 @@ l7:
 	     //Empty Statement
 
 
-	j(l7); // Jump if not equal
-	e7:
+	j(l17); // Jump if not equal
+	e17:
+
+
+	storei(0, ind(ebp, -12));
 
 
 	// For Statement:
-	storei(3, ind(ebp, -12));
 
-l9:
+l19:
 	loadi(ind(ebp,-12), eax);
 	cmpi(5,eax);
-	jg(l10);
+	jg(l20);
 	move(0,eax);
-	j(e10);
-	l10:
+	j(e20);
+	l20:
 	move(1,eax);
-	e10:
+	e20:
 	cmpi(0, eax);
-	je(e9); // Jump if not equal
+	je(e19); // Jump if not equal
+	loadi(ind(ebp,-12), eax);
+	addi(1,eax);
+	storei(eax, ind(ebp, -12));
+
+
 	storei(0, ind(ebp, -8));
 
 
 	// While Statement:
 
-l11:
+l21:
 	loadi(ind(ebp,-8), eax);
 	loadi(ind(ebp,-12), ebx);
 	cmpi(ebx,eax);
-	jg(l12);
+	jg(l22);
 	move(0,eax);
-	j(e12);
-	l12:
+	j(e22);
+	l22:
 	move(1,eax);
-	e12:
+	e22:
 	cmpi(0, eax);
-	je(e11); // Jump if not equal
+	je(e21); // Jump if not equal
 	loadi(ind(ebp,-8), eax);
 	addi(1,eax);
 	storei(eax, ind(ebp, -8));
@@ -420,11 +616,11 @@ l11:
 	     //Empty Statement
 
 
-	j(l11); // Jump if not equal
-	e11:
+	j(l21); // Jump if not equal
+	e21:
 
 
-	print_string("Value of z in for is :: ");
+	print_string("Value of z in loop is :: ");
 	loadi(ind(ebp,-12), eax);
 	print_int(eax);
 	print_char('\n');
@@ -433,11 +629,8 @@ l11:
 	     //Empty Statement
 
 
-	loadi(ind(ebp,-12), eax);
-	addi(1,eax);
-	storei(eax,ind(ebp,-12));
-	j(l9); // Jump if not equal
-	e9:
+	j(l19); // Jump if not equal
+	e19:
 
 
 	print_string("Value of x is :: ");
@@ -533,7 +726,7 @@ l11:
 	     //Empty Statement
 
 
-	addi(100,esp); // removing space for locals
+	addi(184,esp); // removing space for locals
 	return; //return
 }
 

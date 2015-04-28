@@ -27,8 +27,9 @@ int f(int a, int b, float c){
 
 int main(){
 	int x, y, z, w;
-	int p[4][5];
+	int p[4][5], array[20];
 	float t;
+	int invcounts;
 	//x = 1;
 	//y = 2.0;
 	//z = -1;
@@ -37,7 +38,31 @@ int main(){
 	p[1][1] = 1.5;
 	p[3][3] = 1.6;
 
-	printf("fact(3) :: ", fact(fact(3) + fact(2)));
+	printf("fact(8) :: ", fact(fact(3) + fact(2)));
+
+	x = 0;
+
+	for(1;x < 20; x++){
+		if (x < 10)
+			array[x] = x;
+		else array[x] = 20 - x;
+		printf("array[x] :: ", x, " : " , array[x]);
+
+	}
+		
+
+	invcounts = 0;
+	
+	for(x = 0; x < 20; x++){
+		for(y = 0; y < x; y++){
+			if (array[y] > array[x]){
+				invcounts = invcounts + 1;
+			}
+			else ;
+		}
+	}
+	
+	printf("invcounts :: " , invcounts);
 
 	x = 1;
 	y = 2;
@@ -45,11 +70,12 @@ int main(){
 	t = 8;
 
 	x = y*f(1,1,1)*z;
+	printf("Value of x is :: ", x);
 
 	x = x++;
 
-	printf("Value of x++ is :: ", x++ + x++);
-	printf("Value of p33 is :: ", p[3][3]++ + p[3][3]++);
+    printf("Value of x++ is :: ", x++ + x++);
+    printf("Value of p33 is :: ", p[3][3]++ + p[3][3]++);
 
 	if (x || 0)
 		z = 3;
@@ -60,13 +86,15 @@ int main(){
 		printf("Value of z in loop is :: ", z);
 	}
 
-	for (z = 3; z < 5; z++){
+	z = 0;
+	for (1; z < 5; 1){
+		z = z + 1;
 		y = 0;
 		while(y < z){
 			y = y+1;
 			printf("Value of y in while for loop is :: ", y);
 		}
-		printf("Value of z in for is :: ", z);
+		printf("Value of z in loop is :: ", z);
 	}
 
 	// z = 2;
