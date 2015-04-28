@@ -25,3 +25,12 @@ clean:
 
 ast:
 	./a.out < test.cpp > astjunk;
+
+run: clean2 a.out
+	./a.out
+
+a.out: machine.cc test.asm
+	g++ -Wno-write-strings -g3 -O0 machine.cc
+
+clean2:
+	rm -f a.out

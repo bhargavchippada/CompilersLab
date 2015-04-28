@@ -38,6 +38,10 @@ struct regHandler{
 	}
 
 	string topstack(){
+		// if(regs.size()==0) {
+		// 	cerr<<"registers stack empty!"<<endl;
+		// 	return "NULL";
+		// }
 		return regs.top();
 	}
 
@@ -113,6 +117,19 @@ struct symbTable{
 		if (s == "FLOAT") return F;
 		if (s == "VOID") return 0;
 		return -1;
+	}
+
+	int totalParameterOffset(){
+		int res = 0;
+		for(int i=0; i<symtable.size();i++){
+			if (res < -(symtable[i]->offset))
+				res = -(symtable[i]->offset);
+		}
+		return res;
+	}
+
+	int totalLocalOffset(){
+		return offset;
 	}
 
 	entity* find(string varName){

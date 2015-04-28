@@ -66,14 +66,19 @@ function_definition
     // genCode();
     gencode("void " + localtableTemp->tablename + "()");
     gencode("{");
-    
+    if (localtableTemp->totalLocalOffset() > 0)
+      gencode("\taddi(-" + to_string(localtableTemp->totalLocalOffset()) + ",esp);");
+    // make space for local variables
+
     if (localtableTemp->tablename != "main"){
         gencode("\tpushi(ebp); // Setting dynamic link");
         gencode("\tmove(esp,ebp); // Setting dynamic link");
     }
     
-    blockstmt->genCode();
+    //
+    blockstmt->labelcalc();
     blockstmt->print(0);std::cout<<std::endl<<std::endl;
+    blockstmt->genCode();
 
     if (localtableTemp->tablename != "main"){
       gencode("e:  loadi(ind(ebp), ebp); // restoring dynamic link");

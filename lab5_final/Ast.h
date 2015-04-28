@@ -32,7 +32,8 @@ namespace // anonymous
     regHandler *reghandler = new regHandler();
 
     void gencode(string s){
-        goblcodearray.push_back(s);
+        //goblcodearray.push_back(s);
+        outputFile << s << endl;
     }
 
     int computelabel(int l1, int l2){
@@ -45,9 +46,9 @@ namespace // anonymous
 class ExpAst : public abstract_astnode {
     protected:
     string type="default";
+    int label = -1;
 
 	public:
-    int label = -1;
 
     virtual void print (int level){
         cout<<string(level, ' ')<<"This is an abstract ExpAst class" << endl;
@@ -55,6 +56,11 @@ class ExpAst : public abstract_astnode {
 
     virtual string getType(){
         return type;
+    }
+
+    virtual int getLabel(){
+        cerr << "should not reach here, default one\n";
+        return label;
     }
 
     virtual string getExpStr(){
@@ -71,7 +77,8 @@ class ExpAst : public abstract_astnode {
     }
 
     virtual int labelcalc(bool left){
-        label = -1;
+        cerr << "should not reach here, default one\n";
+        label = 1;
         return label;
     }
 
@@ -94,15 +101,18 @@ class StmtAst : public abstract_astnode {
     virtual void genCode(){
         gencode("\t\tstmtast dummy gen code");
     }
+
+    virtual void labelcalc(){
+    }
 };
 
 class INTCONST : public ExpAst {
   protected:
     int Num;
     string type = "INT";
+    int label = -1;
 
   public:
-    int label = -1;
 
     INTCONST(int n){
     	Num = n;
@@ -114,6 +124,10 @@ class INTCONST : public ExpAst {
 
     string getType(){
         return type;
+    }
+
+    int getLabel(){
+        return label;
     }
 
     int evaluate(){
@@ -160,9 +174,9 @@ class FLOATCONST : public ExpAst {
   protected:
     float Num;
     string type = "FLOAT";
+    int label = -1;
 
   public:
-    int label = -1;
 
     FLOATCONST(float f){
         Num = f;
@@ -174,6 +188,10 @@ class FLOATCONST : public ExpAst {
 
     string getType(){
         return type;
+    }
+
+    int getLabel(){
+        return label;
     }
 
     float evaluate(){
@@ -217,9 +235,9 @@ class STRINGCONST : public ExpAst {
   protected:
     string strlit;
     string type = "STRING";
+    int label = -1;
 
   public:
-    int label = -1;
 
     STRINGCONST(string s){
         strlit = s;
@@ -235,6 +253,10 @@ class STRINGCONST : public ExpAst {
 
     string evaluate(){
         return strlit;
+    }
+    
+    int getLabel(){
+        return label;
     }
 
     bool validate(){
@@ -265,9 +287,9 @@ class IDENTIFIERAST : public ExpAst {
   protected:
     string identifier;
     string type="NULL";
+    int label = -1;
 
   public:
-    int label = -1;
 
     IDENTIFIERAST(string s){
         identifier = s;
@@ -279,6 +301,10 @@ class IDENTIFIERAST : public ExpAst {
 
     string getType(){
         return type;
+    }
+
+    int getLabel(){
+        return label;
     }
 
     string getId(){
@@ -321,9 +347,9 @@ class ArrayRef : public ExpAst {
     IDENTIFIERAST *identifier;
     list<ExpAst*> *expAstList;
     string type;
+    int label = -1;
 
   public:
-    int label = -1;
 
     ArrayRef(IDENTIFIERAST *id){
         identifier = id;
@@ -342,6 +368,10 @@ class ArrayRef : public ExpAst {
 
     string getType(){
         return type;
+    }
+
+    int getLabel(){
+        return label;
     }
 
     bool validate(){
@@ -398,10 +428,14 @@ class ArrayRef : public ExpAst {
     int labelcalc(bool left){
         label = identifier->labelcalc(true);
 
+        // label = 0;
         for (list<ExpAst*>::iterator it = expAstList->begin(); it != expAstList->end(); it++){
-            label = computelabel(label, (*it)->labelcalc(true));
+            (*it)->labelcalc(true);
+            if (label < (*it)->getLabel()) label = (*it)->getLabel();
         }
         
+        if (expAstList->size() > 0) if (label < 2) label = 2;
+
         return label;
     }
 
@@ -440,16 +474,16 @@ class ArrayRef : public ExpAst {
             prod /= (ent->dimensions[i]);
 
             (*it)->genCode();   // assuming the value is in eax
-
-            gencode("\tmuli(-"+to_string(prod)+","+reghandler->topstack()+");");
-        
+            gencode("\tmuli(-"+to_string(prod)+","+reghandler->topstack()+");");    
             gencode("\tpushi(" + reghandler->topstack() + ");");
-
+            
             i++;
         }
 
         gencode("\tmove(" + to_string(offset) + "," + reghandler->topstack()+");");
+        // cerr << "before\n";
         string regtop = reghandler->pop();
+        // cerr << "after\n";
         for (list<ExpAst*>::iterator it = expAstList->begin(); it != expAstList->end(); it++){
             gencode("\tloadi(ind(esp)," + reghandler->topstack()+");");
             gencode("\taddi("+reghandler->topstack() + "," + regtop + ");");
@@ -483,8 +517,9 @@ class Cast : public ExpAst{
     protected:
         ExpAst *singleExpAst;
         string type;
-    public:
         int label = -1;
+
+    public:
 
         Cast(string ty, ExpAst *singleExp): type(ty), singleExpAst(singleExp){}
         
@@ -492,6 +527,11 @@ class Cast : public ExpAst{
             return type;
         }
 
+        int getLabel(){
+            return label;
+        }
+        
+        
         bool validate(){
             return true; // because this class is created only if its valid
         }
@@ -529,9 +569,9 @@ class op2 : public ExpAst{
         ExpAst *rightExpAst;
         string op;
         string type="?";
+        int label = -1;
 
     public:
-        int label = -1;
 
         op2(ExpAst *left, string ope, ExpAst *right): leftExpAst(left), op(ope), rightExpAst(right){}
 
@@ -539,6 +579,12 @@ class op2 : public ExpAst{
             return type;
         }
 
+
+        int getLabel(){
+            return label;
+        }
+    
+    
         bool validate(){
             string ltype = leftExpAst->getType();
             string rtype = rightExpAst->getType();
@@ -604,8 +650,8 @@ class op2 : public ExpAst{
         }
 
         void genCode(){
-            int l1 = leftExpAst->label;
-            int l2 = rightExpAst->label;
+            int l1 = leftExpAst->getLabel();
+            int l2 = rightExpAst->getLabel();
             int maxregs = reghandler->max_regs;
 
             string topreg, secondreg;
@@ -764,15 +810,21 @@ class op1 : public ExpAst{
         ExpAst *singleExpAst;
         string op;
         string type="?";
+        int label = -1;
 
     public:
-        int label = -1;
 
         op1(string ope, ExpAst *singleExp): op(ope), singleExpAst(singleExp){}
 	    
         string getType(){
             return type;
         }
+
+        int getLabel(){
+            return label;
+        }
+        
+        
 
         bool validate(){
             string exptype = singleExpAst->getType();
@@ -831,8 +883,10 @@ class FUNCALL : public ExpAst{
 		IDENTIFIERAST *funcName;
 		list<ExpAst*> *expSequence;
         string type;
+        int label = -1;
 	
 	public:
+
 		FUNCALL(IDENTIFIERAST *iden){
             funcName=iden;
             expSequence = new list<ExpAst*>();
@@ -846,6 +900,11 @@ class FUNCALL : public ExpAst{
             return type;
         }
 
+        int getLabel(){
+            return label;
+        }
+        
+        
         bool validate(){
             string varName = funcName->getId();
 
@@ -920,6 +979,13 @@ class FUNCALL : public ExpAst{
             cout<<"})";
 		}
 
+        int labelcalc(bool left){
+            funcName->labelcalc(true);
+            for (list<ExpAst*>::iterator it = expSequence->begin(); it != expSequence->end(); it++){
+                    (*it)->labelcalc(false);
+            }
+        }
+
         void genCode(){
 
         }
@@ -944,11 +1010,16 @@ class BlockStmt : public StmtAst{
             cout<<string(level+7, ' ')<<"])";
         }
 
+        void labelcalc(){
+            for (list<StmtAst*>::iterator it = stmtSequence->begin(); it != stmtSequence->end();it++){
+                (*it)->labelcalc();
+            }
+        }
+
         void genCode(){
-            for (list<StmtAst*>::iterator it = stmtSequence->begin(); it != stmtSequence->end();){
+            for (list<StmtAst*>::iterator it = stmtSequence->begin(); it != stmtSequence->end();it++){
                 (*it)->genCode();
                 gencode("\n");
-                it++;
             }
         }
 };
@@ -994,8 +1065,12 @@ class ReturnStmt : public StmtAst{
             cout<<")";
         }
 
-        void genCode(){
+        void labelcalc(){
             returnExp->labelcalc(false);
+        }
+
+        void genCode(){
+            
         }
 
 };
@@ -1037,12 +1112,86 @@ class AssStmt : public StmtAst{
             cout<<")";
         }
 
-        void genCode(){
+        void labelcalc(){
             rightExpAst->labelcalc(false);
             leftExpAst->labelcalc(false);
+        }
 
-            rightExpAst->genCode();
-            leftExpAst->genCode();
+        void genCode(){
+            
+
+            // rightExpAst->genCode();
+        
+            // rightExpAst->genCode();
+            // leftExpAst->genCode();
+
+            string ltype = leftExpAst->getType();   // anyway both expressions are of same type
+
+            if (rightExpAst->isConstant())
+            {
+                int x = ((ArrayRef *)leftExpAst)->getOffset();
+
+                if (ltype == "INT"){
+                    if (x == 1) {    // means it is an array and the value is in ebx
+                        gencode("\tstorei(" + to_string(((INTCONST*)rightExpAst)->evaluate()) + ", ind(ebp, " + reghandler->topstack() + "));");
+                    }
+                    else{
+                        gencode("\tstorei(" + to_string(((INTCONST*)rightExpAst)->evaluate()) + ", ind(ebp, " + to_string(x) + "));");
+                    }
+                }
+                else{
+                    if (x == 1) {    // means it is an array and the value is in ebx
+                        gencode("\tstoref(" + to_string(((FLOATCONST*)rightExpAst)->evaluate()) + ", ind(ebp, " + reghandler->topstack() + "));");
+                    }
+                    else{
+                        gencode("\tstoref(" + to_string(((FLOATCONST*)rightExpAst)->evaluate()) + ", ind(ebp, " + to_string(x) + "));");
+                    }
+                }
+            }
+            else
+            {
+                rightExpAst->genCode();
+                // string regtop = reghandler->pop();
+
+                string assty = (ltype == "INT") ? "i" : "f";
+
+                int l1 = leftExpAst->getLabel();
+                int maxregs = reghandler->max_regs;
+
+                int x;
+                // cerr << "l1 :: " << l1 << " maxregs :: " << maxregs << endl;
+                string topreg, secondreg;
+                if (l1 < maxregs){
+                    topreg = reghandler->pop();
+                    x = ((ArrayRef *)leftExpAst)->getOffset();
+                    secondreg = reghandler->topstack();
+                    reghandler->push(topreg);
+                }
+
+                else{
+                    gencode("\tpush" + assty + "(" + reghandler->topstack()  + ");");
+                    
+                    x = ((ArrayRef *)leftExpAst)->getOffset();
+
+                    secondreg = reghandler->pop();
+                    topreg = reghandler->topstack();
+                    reghandler->push(secondreg);
+
+
+                    gencode("\tload" + assty + "(ind(esp)," + topreg  + ");");
+                    gencode("\tpop" + assty + "(1);");
+
+                }
+
+
+                if (x == 1) {    // means it is an array and the offset value is in ebx
+                    gencode("\tstore" + assty + "("+ topreg +", ind(ebp, "+ secondreg +"));");
+                }
+                else{
+                    gencode("\tstore" + assty + "("+ topreg +", ind(ebp, " + to_string(x) +"));");
+                }
+            }
+
         }
 };
 
@@ -1065,8 +1214,14 @@ class IfStmt : public StmtAst{
             cout<<")";
         }
 
-        void genCode(){
+        void labelcalc(){
             ifExpAst->labelcalc(false);
+            thenStmtAst->labelcalc();
+            elseStmtAst->labelcalc();
+        }
+
+        void genCode(){
+            
         }
 };
 
@@ -1076,6 +1231,9 @@ class emptyStmt : public StmtAst{
     public:
         void print (int level){
             cout<<string(level, ' ')<<"(Empty)";
+        }
+
+        void labelcalc(){
         }
 
         void genCode(){
@@ -1099,8 +1257,13 @@ class WhileStmt : public StmtAst{
             cout<<")";
         }
 
+        void labelcalc(){
+           whileExpAst->labelcalc(false);
+           thenStmtAst->labelcalc();
+        }
+
         void genCode(){
-            whileExpAst->labelcalc(false);
+            
         }
 };
 
@@ -1126,10 +1289,14 @@ class ForStmt : public StmtAst{
             cout<<")";
         }
 
-        void genCode(){
+        void labelcalc(){
             for1ExpAst->labelcalc(false);
             for2ExpAst->labelcalc(false);
             for3ExpAst->labelcalc(false);
+            thenStmtAst->labelcalc();
+        }
+
+        void genCode(){
         }
 };
 
@@ -1227,6 +1394,13 @@ class FuncallStmt : public StmtAst{
                 if(it != expSequence->end()) cout<<",";
             }
             cout<<"})";
+        }
+
+        void labelcalc(){
+            funcName->labelcalc(true);
+            for (list<ExpAst*>::iterator it = expSequence->begin(); it != expSequence->end(); it++){
+                    (*it)->labelcalc(false);
+            }
         }
 
         void genCode(){

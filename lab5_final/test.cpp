@@ -4,18 +4,35 @@ void f(){
 
 int main()
 {
-	float x, y, z, w;
-	// float p[4][5];
+	int x, y, z, w;
+	int p[4][5];
 	// x = 1;
 	// y = 2.0;
 	// z = -1;
 	// w = 5.5;
 	// f();
 
+	p[1][1] = 1.5;
+	p[3][3] = 1.6;
+
+	x = 1;
+	y = 2;
+	z = 5;
+
+	p[1+1][2+1] = p[1+2][x+y]*x + y*y + z*z;
+
+	printf("Value of y is :: ", y);
+
+	p[0*(2*p[1][1]+3*p[1][1])][x+y] = ((p[1+1][x+y]*p[p[1][p[1][1]] + 2*p[1][1]][x+y])*(p[1+1][x+y]*p[1+1][x+y]))*p[1+1][x+y]*p[1+1][x+y];
+
 	y = 4;
+
+	printf("Value of y is :: ", y);
+
 	z = 867.4;
 
 	x = y - z;
+	printf("Value of y is :: ", y);
 
 	// x = !y;
 
@@ -29,10 +46,17 @@ int main()
 
 	// x = y + z;
 	// x = y * z;
-	// x = y / z;
+	// x = y / z;]
+
+	x = p[3][3];
+	printf("Value of y is :: ", y);
 	printf("Value of x is :: ", x);
 	printf("Value of y is :: ", y);
+	printf("Value of p2,3 is :: ", p[2][3]);
+	printf("Value of p0,3 is :: ", p[0][3]);
+	printf("Value of p4,3 is :: ", p[4][3]);
 	printf("Value of z is :: ", z);
+	// printf("Value of p2,3 is :: ", p[2][3]);
 
 	/*
 	printf("fgkrfbgjkfg", 34);
