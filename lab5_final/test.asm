@@ -252,34 +252,28 @@ l5:
 	cmpi(0, eax);
 	je(l7); // Jump if not equal
 	loadi(ind(ebp,-4), eax);
-	pushi(eax);
-	loadi(ind(ebp,-4), eax);
-	muli(-4,eax);
-	pushi(eax);
-	move(-100,eax);
-	loadi(ind(esp),ebx);
-	addi(ebx,eax);
+	loadi(ind(ebp,-4), ebx);
+	muli(-4,ebx);
+	pushi(ebx);
+	move(-100,ebx);
+	loadi(ind(esp),ecx);
+	addi(ecx,ebx);
 	popi(1);
-	loadi(ind(esp),ebx);
-	popi(1);
-	storei(ebx, ind(ebp, eax));
+	storei(eax, ind(ebp, ebx));
 	j(e7);
 	l7:
 	move(20,eax);
 	loadi(ind(ebp,-4), ebx);
 	muli(-1,ebx);
 	addi(ebx,eax);
-	pushi(eax);
-	loadi(ind(ebp,-4), eax);
-	muli(-4,eax);
-	pushi(eax);
-	move(-100,eax);
-	loadi(ind(esp),ebx);
-	addi(ebx,eax);
+	loadi(ind(ebp,-4), ebx);
+	muli(-4,ebx);
+	pushi(ebx);
+	move(-100,ebx);
+	loadi(ind(esp),ecx);
+	addi(ecx,ebx);
 	popi(1);
-	loadi(ind(esp),ebx);
-	popi(1);
-	storei(ebx, ind(ebp, eax));
+	storei(eax, ind(ebp, ebx));
 	e7:
 
 
@@ -342,15 +336,6 @@ l11:
 	cmpi(0, eax);
 	je(e11); // Jump if not equal
 	// If Statement:
-	loadi(ind(ebp,-4), eax);
-	muli(-4,eax);
-	pushi(eax);
-	move(-100,eax);
-	loadi(ind(esp),ebx);
-	addi(ebx,eax);
-	popi(1);
-	loadi(ind(ebp,eax),eax);
-	pushi(eax);
 	loadi(ind(ebp,-8), eax);
 	muli(-4,eax);
 	pushi(eax);
@@ -359,8 +344,14 @@ l11:
 	addi(ebx,eax);
 	popi(1);
 	loadi(ind(ebp,eax),eax);
-	loadi(ind(esp),ebx);
+	loadi(ind(ebp,-4), ebx);
+	muli(-4,ebx);
+	pushi(ebx);
+	move(-100,ebx);
+	loadi(ind(esp),ecx);
+	addi(ecx,ebx);
 	popi(1);
+	loadi(ind(ebp,ebx),ebx);
 	cmpi(ebx,eax);
 	jl(l14);
 	move(0,eax);
