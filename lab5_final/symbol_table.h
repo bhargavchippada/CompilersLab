@@ -28,20 +28,11 @@ struct regHandler{
 		regs.push("eax");
 	}
 
-	void swap(){
-		string top = regs.top();
-		regs.pop();
-		string second = regs.top();
-		regs.pop();
-		regs.push(top);
-		regs.push(second);
-	}
-
 	string topstack(){
-		// if(regs.size()==0) {
-		// 	cerr<<"registers stack empty!"<<endl;
-		// 	return "NULL";
-		// }
+		if(regs.size()==0) {
+			cerr<<"registers stack empty!"<<endl;
+			return "NULL";
+		}
 		return regs.top();
 	}
 
@@ -61,6 +52,13 @@ struct regHandler{
 
 	int size(){
 		return regs.size();
+	}
+
+	void swap(){
+		string top = pop();
+		string second = pop();
+		regs.push(top);
+		regs.push(second);
 	}
 
 };

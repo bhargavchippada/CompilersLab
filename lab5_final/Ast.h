@@ -78,7 +78,7 @@ class ExpAst : public abstract_astnode {
 
     virtual int labelcalc(bool left){
         cerr << "should not reach here, default one\n";
-        label = 1;
+        label = -2;
         return label;
     }
 
@@ -103,6 +103,7 @@ class StmtAst : public abstract_astnode {
     }
 
     virtual void labelcalc(){
+        cerr << "should not reach here, default stmt labelcalc\n";
     }
 };
 
@@ -115,10 +116,6 @@ class INTCONST : public ExpAst {
   public:
 
     INTCONST(int n){
-    	Num = n;
-    }
-
-    void setValue(int n){
     	Num = n;
     }
 
@@ -151,13 +148,8 @@ class INTCONST : public ExpAst {
     }
 
     int labelcalc(bool left){
-        if(left) {
-            label = 1;
-            // gencode("\tmove("+to_string(Num)+","+reghandler->topstack()+");");
-        }
-        else {
-            label = 0;
-        }
+        if(left) label = 1;
+        else label = 0;
         
         return label;
     }
@@ -165,7 +157,7 @@ class INTCONST : public ExpAst {
     void genCode(){
         if(label == 1) {
             gencode("\tmove("+to_string(Num)+","+reghandler->topstack()+");");
-        }
+        } //else it is evaluated using isConstant condition
     }
 
 };
@@ -179,10 +171,6 @@ class FLOATCONST : public ExpAst {
   public:
 
     FLOATCONST(float f){
-        Num = f;
-    }
-
-    void setValue(float f){
         Num = f;
     }
 
@@ -215,10 +203,7 @@ class FLOATCONST : public ExpAst {
     }
 
     int labelcalc(bool left){
-        if(left) {
-            label = 1;
-            // gencode("\tmove("+to_string(Num)+","+reghandler->topstack()+");");
-        }
+        if(left) label = 1;
         else label = 0;
         
         return label;
@@ -240,10 +225,6 @@ class STRINGCONST : public ExpAst {
   public:
 
     STRINGCONST(string s){
-        strlit = s;
-    }
-
-    void setValue(string s){
         strlit = s;
     }
 
@@ -292,10 +273,6 @@ class IDENTIFIERAST : public ExpAst {
   public:
 
     IDENTIFIERAST(string s){
-        identifier = s;
-    }
-
-    void setValue(string s){
         identifier = s;
     }
 
@@ -696,10 +673,10 @@ class op2 : public ExpAst{
 
 
             if (op == "OR"){
-
+                // need to implement
             }
             else if (op == "AND"){
-
+                // need to implement
             }
             else if (op == "EQ_OP" || op == "NE_OP" || op == "LT" || op == "GT" || op == "LE_OP" || op == "GE_OP"){
                 string relFunc;
@@ -798,7 +775,7 @@ class op2 : public ExpAst{
             }
 
             else if (op == "ASSIGN"){
-
+                // need to implement
             }
 
         }
@@ -874,6 +851,8 @@ class op1 : public ExpAst{
                 else{
                     gencode("\tmulf(-1," + reghandler->topstack() + ");");
                 }
+            } else if (op == "PP"){
+                // need to implement
             }
         }
 };

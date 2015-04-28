@@ -75,10 +75,12 @@ function_definition
         gencode("\tmove(esp,ebp); // Setting dynamic link");
     }
     
-    //
     blockstmt->labelcalc();
     blockstmt->print(0);std::cout<<std::endl<<std::endl;
     blockstmt->genCode();
+
+    if (localtableTemp->totalLocalOffset() > 0)
+      gencode("\taddi(" + to_string(localtableTemp->totalLocalOffset()) + ",esp);");
 
     if (localtableTemp->tablename != "main"){
       gencode("e:  loadi(ind(ebp), ebp); // restoring dynamic link");
