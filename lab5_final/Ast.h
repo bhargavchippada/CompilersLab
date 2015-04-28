@@ -966,7 +966,84 @@ class FUNCALL : public ExpAst{
         }
 
         void genCode(){
+            // outputFile << "\t// funcallAST\n";
 
+            // Push the return value
+
+            gencode("\n\t // paramater loading :: " + funcName->getId() );
+
+            if (type == "INT"){
+                gencode("\tpushi(0); //To make space in stack for return val");
+            } 
+            else if (type == "FLOAT"){
+                gencode("\tpushf(0); //To make space in stack for return val");
+            }
+
+            int floatParams = 0, intParams = 0;
+
+            string varName = funcName->getId();
+            entity* ent = localtable->findFunctionInScope(varName); 
+            symbTable *func = ent->funcPtr;
+
+            list<ExpAst*>::iterator it = expSequence->end();
+            int i = expSequence->size() - 1;
+
+            while(i >= 0){
+                it--;
+
+                string ltype = func->symtable[i]->type;
+                string rtype = (*it)->getType();
+
+                if ((*it)->isConstant()) {
+                
+                    if (ltype == "INT"){
+                        intParams++;
+                        gencode("\tpushi(" + to_string(((INTCONST*) (*it))->evaluate()) + "); // argument to fact");
+                    }
+                    if (ltype == "FLOAT"){
+                        floatParams++;
+                        gencode("\tpushf(" + to_string(((FLOATCONST*) (*it))->evaluate()) + "); // argument to fact");
+                    }
+                }
+                else{
+                    (*it)->genCode();
+                    // assuming the value to be in eax
+
+                    if (ltype == "INT"){
+                        intParams++;
+                        gencode("\tpushi(" + reghandler->topstack() + "); // argument to fact");
+                    }
+                    if (ltype == "FLOAT"){
+                        floatParams++;
+                        gencode("\tpushf(" + reghandler->topstack() + "); // argument to fact");
+                    }
+                }
+
+                i--;
+            }
+
+            // Function call ::
+
+            gencode("\t"+ varName + "();");
+
+            if (intParams > 0){
+                gencode("\tpopi(" + to_string(intParams) + ");");
+            }
+            
+            if (floatParams > 0){
+                gencode("\tpopf(" + to_string(floatParams) + ");");
+            }
+
+            // move return value into eax
+            // Pop retrun value
+            if (type == "INT"){
+                gencode("\tloadi(ind(esp)," + reghandler->topstack() + "); // receives the return value");
+                gencode("\tpopi(1); // Clean up return value\n");
+            } 
+            else if (type == "FLOAT"){
+                gencode("\tloadf(ind(esp)," + reghandler->topstack() + "); // receives the return value");
+                gencode("\tpopf(1); // Clean up return value\n");
+            }
         }
 
 };

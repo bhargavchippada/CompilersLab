@@ -1,16 +1,27 @@
-void f(){
+int f(int a, int b, float c){
+	int x,y;
 
+	printf("Value of a in f is :: ", a);
+	printf("Value of b in f is :: ", b);
+	printf("Value of c in f is :: ", c);
+
+	y = 5;
+	x = (a*b*b); 
+	// y = x <= y;
+	printf("Value of x in f is :: ", x);
+	// printf("Value of y in f is :: ", y);
+	// return x > y;
 }
 
 int main()
 {
 	int x, y, z, w;
 	int p[4][5];
+	float t;
 	// x = 1;
 	// y = 2.0;
 	// z = -1;
 	// w = 5.5;
-	// f();
 
 	p[1][1] = 1.5;
 	p[3][3] = 1.6;
@@ -18,6 +29,9 @@ int main()
 	x = 1;
 	y = 2;
 	z = 5;
+	t = 8;
+
+	x = f(x, t, 6);
 
 	p[1+1][2+1] = p[1+2][x+y]*x + y*y + z*z;
 

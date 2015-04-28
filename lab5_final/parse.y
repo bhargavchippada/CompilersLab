@@ -39,18 +39,18 @@ code_unit
   ;
 
 translation_unit
-	: function_definition 
+  : function_definition 
   {
     // gobltable->printTable();
   }
-	| translation_unit function_definition
+  | translation_unit function_definition
   {
     // gobltable->printTable();
   }
   ;
 
 function_definition
-	: type_specifier fun_declarator compound_statement 
+  : type_specifier fun_declarator compound_statement 
   {
     //localtable->returntype = $1;
     localtable->printTable();
@@ -66,21 +66,24 @@ function_definition
     // genCode();
     gencode("void " + localtableTemp->tablename + "()");
     gencode("{");
-    if (localtableTemp->totalLocalOffset() > 0)
-      gencode("\taddi(-" + to_string(localtableTemp->totalLocalOffset()) + ",esp);");
     // make space for local variables
 
     if (localtableTemp->tablename != "main"){
         gencode("\tpushi(ebp); // Setting dynamic link");
         gencode("\tmove(esp,ebp); // Setting dynamic link");
     }
+  
+    if (localtableTemp->totalLocalOffset() > 0)
+      gencode("\taddi(-" + to_string(localtableTemp->totalLocalOffset()) + ",esp); // making space for locals");
     
+    //
     blockstmt->labelcalc();
     blockstmt->print(0);std::cout<<std::endl<<std::endl;
     blockstmt->genCode();
 
     if (localtableTemp->totalLocalOffset() > 0)
-      gencode("\taddi(" + to_string(localtableTemp->totalLocalOffset()) + ",esp);");
+      gencode("\taddi(" + to_string(localtableTemp->totalLocalOffset()) + ",esp); // removing space for locals");
+
 
     if (localtableTemp->tablename != "main"){
       gencode("e:  loadi(ind(ebp), ebp); // restoring dynamic link");
@@ -94,10 +97,10 @@ function_definition
     isParam = true;
     funType = true;
   }
-	;
+  ;
 
 type_specifier
-	: VOID
+  : VOID
   {
     $$ = "VOID";
     varType = "VOID";
@@ -105,7 +108,7 @@ type_specifier
       localtable->returntype = $$;
       funType = false;
     }
-  } 	
+  }   
   | INT
   {
     $$ = "INT";
@@ -115,7 +118,7 @@ type_specifier
       funType = false;
     }
   }
-	| FLOAT
+  | FLOAT
   {
     $$ = "FLOAT";
     varType = "FLOAT";
@@ -127,7 +130,7 @@ type_specifier
   ;
 
 fun_declarator
-	: IDENTIFIER '(' parameter_list ')' 
+  : IDENTIFIER '(' parameter_list ')' 
   {
     localtable->tablename = $1;
     isParam = false;
@@ -137,31 +140,31 @@ fun_declarator
     localtable->tablename = $1;
     isParam = false;
   }
-	;
+  ;
 
 parameter_list
-	: parameter_declaration
+  : parameter_declaration
   {
     localtable->numofparams++;
   }
-	| parameter_list ',' parameter_declaration
+  | parameter_list ',' parameter_declaration
   {
     localtable->numofparams++;
   }
-	;
+  ;
 
 parameter_declaration
-	: type_specifier declarator 
+  : type_specifier declarator 
   ;
 
 declarator
-	: IDENTIFIER 
+  : IDENTIFIER 
   {
     $$ = $1;
     int exitcode = localtable->addEntity($1, "var", varType, isParam, NULL);
     if (exitcode < 0) {cerr<<"line number: "<<lineno<<endl; ABORT();}
   }
-	| declarator '[' constant_expression ']' 
+  | declarator '[' constant_expression ']' 
   {
     int exitcode = localtable->addArray($1, $3, isParam);
     if (exitcode < 0) {cerr<<"line number: "<<lineno<<endl; ABORT();}
@@ -181,12 +184,12 @@ constant_expression
     ;
 
 compound_statement
-	: '{' '}'
+  : '{' '}'
   {
     $$ = new BlockStmt(new list<StmtAst*>());
     //($$)->print(0);std::cout<<std::endl<<std::endl;
   }
-	| '{' statement_list '}'
+  | '{' statement_list '}'
   {
     $$ = new BlockStmt($2);
     //($$)->print(0);std::cout<<std::endl<<std::endl;
@@ -196,20 +199,20 @@ compound_statement
     $$ = new BlockStmt($3);
     //($$)->print(0);std::cout<<std::endl<<std::endl;
   }
-	;
+  ;
 
 statement_list
-	: statement
+  : statement
   {
     $$ = new list<StmtAst*>();
     ($$)->push_back($1);
-  }	
+  } 
   | statement_list statement
   {
     ((list<StmtAst*>*)$1)->push_back($2);
     $$ = $1;
   }
-	;
+  ;
 
 statement
   : '{' statement_list '}'  //a solution to the local decl problem
@@ -224,11 +227,11 @@ statement
   | iteration_statement
   {
     $$ = $1;
-  }	
+  } 
   | assignment_statement
   {
     $$ = $1;
-  }	
+  } 
   | RETURN expression ';'
   {
     $$ = new ReturnStmt($2);
@@ -253,19 +256,19 @@ statement
   ;
 
 assignment_statement
-	: ';'
+  : ';'
   {
     $$ = new emptyStmt();
     //($$)->print(0);std::cout<<std::endl;
-  }							
-	|  l_expression '=' expression ';'
+  }             
+  |  l_expression '=' expression ';'
   {
     if(!($1)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     $$ = new AssStmt($1,$3);
     if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
-  }	
-	;
+  } 
+  ;
 
 expression
   : logical_and_expression
@@ -294,7 +297,7 @@ logical_and_expression
   ;
 
 equality_expression
-	: relational_expression
+  : relational_expression
   {
     $$ = $1;
   }
@@ -303,17 +306,17 @@ equality_expression
     $$ = new op2($1,"EQ_OP",$3);
     if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
-  }	
-	| equality_expression NE_OP relational_expression
+  } 
+  | equality_expression NE_OP relational_expression
   {
     $$ = new op2($1,"NE_OP",$3);
     if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
-	;
+  ;
 
 relational_expression
-	: additive_expression
+  : additive_expression
   {
     $$ = $1;
   }
@@ -323,13 +326,13 @@ relational_expression
     if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
-	| relational_expression '>' additive_expression
+  | relational_expression '>' additive_expression
   {
     $$ = new op2($1,"GT",$3);
     if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
-	| relational_expression LE_OP additive_expression
+  | relational_expression LE_OP additive_expression
   {
     $$ = new op2($1,"LE_OP",$3);
     if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
@@ -341,58 +344,58 @@ relational_expression
     if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
-	;
+  ;
 
 additive_expression 
-	: multiplicative_expression
+  : multiplicative_expression
   {
     $$ = $1;
   }
-	| additive_expression '+' multiplicative_expression
+  | additive_expression '+' multiplicative_expression
   {
     $$ = new op2($1,"PLUS",$3);
     if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
-	| additive_expression '-' multiplicative_expression
+  | additive_expression '-' multiplicative_expression
   {
     $$ = new op2($1,"MINUS",$3);
     if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
-	;
+  ;
 
 multiplicative_expression
-	: unary_expression
+  : unary_expression
   {
     $$ = $1;
   }
-	| multiplicative_expression '*' unary_expression
+  | multiplicative_expression '*' unary_expression
   {
     $$ = new op2($1,"MULT",$3);
     if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
-	| multiplicative_expression '/' unary_expression
+  | multiplicative_expression '/' unary_expression
   {
     $$ = new op2($1,"DIV",$3);
     if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
-	;
+  ;
 
 unary_expression
-	: postfix_expression
+  : postfix_expression
   {
     $$ = $1;
-  } 				
-	| unary_operator postfix_expression
+  }         
+  | unary_operator postfix_expression
   {
     $$ = new op1($1,$2);
     if(!($$)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     //($$)->print(0);std::cout<<std::endl;
   }
-	;
+  ;
 
 postfix_expression
   : primary_expression
@@ -422,7 +425,7 @@ postfix_expression
   ;
 
 primary_expression
-	: l_expression
+  : l_expression
   {
     if(!($1)->validate()) {cerr<<"line number: "<<lineno<<endl; ABORT();}
     $$ = $1;
@@ -435,12 +438,12 @@ primary_expression
     //($$)->print(0);std::cout<<std::endl;
     
   }
-	| INT_CONSTANT
+  | INT_CONSTANT
   {
     $$ = new INTCONST($1);
     //($$)->print(0);std::cout<<std::endl;
   }
-	| FLOAT_CONSTANT
+  | FLOAT_CONSTANT
   {
     $$ = new FLOATCONST($1);
     //($$)->print(0);std::cout<<std::endl;
@@ -450,11 +453,11 @@ primary_expression
     $$ = new STRINGCONST($1);
     //($$)->print(0);std::cout<<std::endl;
   }
-	| '(' expression ')'
+  | '(' expression ')'
   {
     $$ = $2;
   }
-	;
+  ;
 
 l_expression
   : IDENTIFIER
@@ -490,11 +493,11 @@ unary_operator
   {
     $$ = "UMINUS";
   }
-	| '!'
+  | '!'
   {
     $$ = "NOT";
   }
-	;
+  ;
 
 selection_statement
   : IF '(' expression ')' statement ELSE statement
@@ -505,7 +508,7 @@ selection_statement
   ;
 
 iteration_statement
-	: WHILE '(' expression ')' statement
+  : WHILE '(' expression ')' statement
   {
     $$ = new WhileStmt($3,$5);
     //($$)->print(0);std::cout<<std::endl;
@@ -518,15 +521,15 @@ iteration_statement
   ;
 
 declaration_list
-  : declaration  					
+  : declaration           
   | declaration_list declaration
   ;
 
 declaration
-	: type_specifier declarator_list ';'
-	;
+  : type_specifier declarator_list ';'
+  ;
 
 declarator_list
-	: declarator
-	| declarator_list ',' declarator 
-	;
+  : declarator
+  | declarator_list ',' declarator 
+  ;
